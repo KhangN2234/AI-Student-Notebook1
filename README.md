@@ -169,7 +169,7 @@ As a user, I want to view previously saved notes.
 |------|------------|--------|------|
 | Setup repository | Anna | Done | 3/31/26 |
 | README + planning | Anna | In Progress | 4/4/26 |
-| AI summary feature (US3) | Anna | In Progress | 4/4/26 |
+| Set up backend project (Node.js + Express server) | Anna | In Progress | 4/4/26 |
 
 ---
 
