@@ -167,9 +167,9 @@ As a user, I want to view previously saved notes.
 
 | Task | Assigned To | Status | Date |
 |------|------------|--------|------|
-| Setup repository | Anna | Done | 3/20/26 |
+| Setup repository | Anna | Done | 3/31/26 |
 | README + planning | Anna | In Progress | 4/4/26 |
-| AI summary feature | TBD | Not Started | — |
+| AI summary feature (US3) | Anna | In Progress | 4/4/26 |
 
 ---
 
