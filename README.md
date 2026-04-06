@@ -152,14 +152,16 @@ As a user, I want to view previously saved notes.
 
 ## 📅 Weekly Updates
 
-### Week of ______
+### Week of April 5
 
-- (What was completed)
-- (What is in progress)
+- Initialized React frontend using Vite
+- Set up project folder structure and README
+- Replaced default UI with basic app layout
 
 **Next:**
 
-- (Next steps)
+- Setup Backend
+- Begin working on AI summary functionality
 
 ---
 
@@ -168,6 +170,8 @@ As a user, I want to view previously saved notes.
 | Task | Assigned To | Status | Date |
 |------|------------|--------|------|
 | Setup repository | Anna | Done | 3/31/26 |
+| Setup React and default UI page | Anna | Done | 4/4/26
+
 | README + planning | Anna | In Progress | 4/4/26 |
 | Set up backend project (Node.js + Express server) | Anna | In Progress | 4/4/26 |
 
