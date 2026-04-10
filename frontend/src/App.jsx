@@ -4,7 +4,6 @@ import DashboardPage from './pages/DashboardPage';
 import FoldersPage from './pages/FoldersPage';
 import NoteDetailPage from './pages/NoteDetailPage';
 import NotesInputPage from './pages/NotesInputPage';
-import NotesListPage from './pages/NotesListPage';
 import QuestionsPage from './pages/QuestionsPage';
 import SummaryPage from './pages/SummaryPage';
 import './App.css';
@@ -15,7 +14,6 @@ function App() {
       <Route element={<AppLayout />} path="/">
         <Route element={<DashboardPage />} index />
         <Route element={<NotesInputPage />} path="notes/new" />
-        <Route element={<NotesListPage />} path="notes" />
         <Route element={<NoteDetailPage />} path="notes/:id" />
         <Route element={<SummaryPage />} path="notes/:id/summary" />
         <Route element={<QuestionsPage />} path="notes/:id/questions" />

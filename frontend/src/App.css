@@ -1,20 +1,23 @@
 .app-shell {
   min-height: 100vh;
-  display: grid;
+  display: flex;
   grid-template-rows: auto 1fr;
 }
 
-.topbar {
+/* Content area sits beside sidebar */
+.content-area {
+  flex: 1;
   padding: 1.5rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: flex-end;
-  justify-content: space-between;
-  background: linear-gradient(90deg, #fdf2d6, #f8fafc 40%, #dcfce7);
 }
 
+p {
+  margin-bottom: 15px;
+}
+
+/*------------------------------------------------------*/
+/* NAV BAR */
+
+/*Change the "AI student notebook" text */
 .eyebrow {
   margin: 0;
   font-size: 0.8rem;
@@ -23,33 +26,76 @@
   color: #4b5563;
 }
 
-.topbar h1 {
+.sidebar {
+  width: 220px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background: linear-gradient(180deg, #fdf2d6, #f8fafc 40%, #fefefe);
+
+  position: sticky;
+  top: 0;            
+  height: 100vh; 
+} .sidebar h1 {
   margin: 0.3rem 0 0;
   font-size: 1.5rem;
-}
-
-.topnav {
+} .sidebar-top {
+  padding: 1.5rem 1rem 1rem;
+  border-bottom: 1px solid var(--border);
+} .sidebar-middle {
+  flex: 1;                
+  overflow-y: auto;   /* ONLY this part scrolls */
+  padding: 0 1rem;
+} .sidebar-bottom {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  flex-wrap: wrap;
+}   .sidebar-bottom button {
+      background-color: black;
+      color: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.9rem;
+      transition: 0.2s;
+      cursor: pointer;
+    } .sidebar-bottom button:hover {
+      background-color: #13354e;
+    }
+
+/*Spacing between nav-links */
+.sidenav {
+  display: flex;
+  flex-direction: column;
 }
 
+/*Change the nav buttons like dashboard etc */
 .nav-link {
+  display: block;
   text-decoration: none;
   color: #1f2937;
   border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
   font-size: 0.9rem;
   background: white;
+  transition: 0.3s;
+} .nav-link:hover {
+  border-color: #cfa707;
+  color: #826800;
+  background: #f2f7c5;
 }
 
 .nav-link-active {
-  border-color: #0f766e;
-  color: #134e4a;
-  background: #ccfbf1;
+  border-color: #cfa707;
+  background: #f2f7c5;
 }
 
+/*-----------------------------------------------------*/
+/*DASHBOARD PAPGE*/
 .content-area {
   padding: 1.5rem;
   max-width: 1000px;
@@ -68,6 +114,8 @@
   border-radius: 0.75rem;
   padding: 1rem;
   background: white;
+} .card p {
+  margin-bottom: 10px;
 }
 
 .grid-3,
@@ -124,10 +172,10 @@ a:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #0f766e;
+  border: 1px solid #cfa707;
   border-radius: 0.6rem;
   padding: 0.55rem 0.85rem;
-  background: #0f766e;
+  background: #cfa707;
   color: white;
   text-decoration: none;
   cursor: pointer;
