@@ -1,12 +1,28 @@
+import { Navigate, Route, Routes } from 'react-router-dom';
+import AppLayout from './components/AppLayout';
+import DashboardPage from './pages/DashboardPage';
+import FoldersPage from './pages/FoldersPage';
+import NoteDetailPage from './pages/NoteDetailPage';
+import NotesInputPage from './pages/NotesInputPage';
+import NotesListPage from './pages/NotesListPage';
+import QuestionsPage from './pages/QuestionsPage';
+import SummaryPage from './pages/SummaryPage';
+import './App.css';
+
 function App() {
   return (
-    <div>
-      <h1>AI Student Notebook</h1>
-      <textarea placeholder="Paste your notes here..." rows="10" cols="50"></textarea>
-      <br /><br />
-      <button>Generate Summary</button>
-      <button>Generate Questions</button>
-    </div>
+    <Routes>
+      <Route element={<AppLayout />} path="/">
+        <Route element={<DashboardPage />} index />
+        <Route element={<NotesInputPage />} path="notes/new" />
+        <Route element={<NotesListPage />} path="notes" />
+        <Route element={<NoteDetailPage />} path="notes/:id" />
+        <Route element={<SummaryPage />} path="notes/:id/summary" />
+        <Route element={<QuestionsPage />} path="notes/:id/questions" />
+        <Route element={<FoldersPage />} path="folders" />
+      </Route>
+      <Route element={<Navigate replace to="/" />} path="*" />
+    </Routes>
   );
 }
 
