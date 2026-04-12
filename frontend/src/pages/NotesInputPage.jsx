@@ -1,22 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createNote, getFolders } from '../services/api';
+import { createNote } from '../services/api';
 
 function NotesInputPage() {
   const navigate = useNavigate();
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [folderId, setFolderId] = useState('');
-  const [folders, setFolders] = useState([]);
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState({ title: '', content: '' });
 
+  const [summary, setSummary] = useState('');
+
   function validateForm() {
     const nextErrors = { title: '', content: '' };
+
     if (!title.trim()) {
       nextErrors.title = 'Please enter a title for this note.';
     }
+
     if (!content.trim()) {
       nextErrors.content = 'Please enter your note content.';
     }
@@ -31,34 +35,52 @@ function NotesInputPage() {
     setFolderId('');
     setStatusMessage('');
     setFieldErrors({ title: '', content: '' });
+    setSummary('');
   }
-
-  useEffect(() => {
-    getFolders()
-      .then((data) => setFolders(data.folders || []))
-      .catch(() => {
-        setFolders([]);
-        setStatusMessage('Folders could not be loaded. You can still save notes as unassigned.');
-      });
-  }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
       setSaving(true);
       setStatusMessage('');
-      await createNote({ title: title.trim(), content: content.trim(), folderId: folderId || null });
-      setStatusMessage('Note saved successfully. Redirecting to your notes...');
+
+      await createNote({
+        title: title.trim(),
+        content: content.trim(),
+        folderId: folderId || null,
+      });
+
+      setStatusMessage('Note saved successfully. Redirecting...');
       setTimeout(() => navigate('/notes'), 800);
-    } catch (requestError) {
-      setStatusMessage(requestError.message || 'Unable to save note right now. Please try again.');
+    } catch (err) {
+      setStatusMessage(err.message || 'Unable to save note.');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSummarize() {
+    if (!content.trim()) {
+      setStatusMessage('Please enter note content before summarizing.');
+      return;
+    }
+
+    try {
+      setStatusMessage('');
+      const data = await createNote({
+        title: title || 'Temp Note',
+        content,
+        folderId: folderId || null,
+        summarize: true,
+      });
+
+      setSummary(data.note?.summary || 'No summary returned.');
+      setStatusMessage('Summary generated successfully.');
+    } catch (err) {
+      setStatusMessage(err.message || 'Unable to summarize note.');
     }
   }
 
@@ -92,18 +114,6 @@ function NotesInputPage() {
           </p>
         ) : null}
 
-        <label htmlFor="folder-select">
-          Folder
-          <select id="folder-select" value={folderId} onChange={(event) => setFolderId(event.target.value)}>
-            <option value="">Unassigned</option>
-            {folders.map((folder) => (
-              <option key={folder.id} value={folder.id}>
-                {folder.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <label className="upload-placeholder" htmlFor="upload-placeholder-input">
           Upload notes file (coming soon)
           <input
@@ -132,7 +142,7 @@ function NotesInputPage() {
                 setFieldErrors((prev) => ({ ...prev, content: '' }));
               }
             }}
-            placeholder="Paste lecture notes here..."
+            placeholder="Nothing here yet..."
           />
         </label>
         {fieldErrors.content ? (
@@ -150,7 +160,17 @@ function NotesInputPage() {
           <button className="button secondary" disabled={saving} onClick={clearForm} type="button">
             Clear
           </button>
+          <button type="button" className="button secondary" onClick={handleSummarize}>
+            Summarize
+          </button>
         </div>
+
+        {summary && (
+          <div className="summary-box">
+            <h3>Summary</h3>
+            <p>{summary}</p>
+          </div>
+        )}
       </form>
     </section>
   );

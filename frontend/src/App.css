@@ -179,11 +179,20 @@ a:focus-visible {
   color: white;
   text-decoration: none;
   cursor: pointer;
+  transition: 0.3s;
+} .button:hover {
+  border-color: #cfa707;
+  color: #826800;
+  background: #f2f7c5;
 }
 
 .button.secondary {
   background: white;
   color: #134e4a;
+} .button:hover {
+  border-color: #cfa707;
+  color: #826800;
+  background: #f2f7c5;
 }
 
 .button-row {
