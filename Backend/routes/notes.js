@@ -47,36 +47,37 @@ router.post('/', async (req, res) => {
 
 		try {
 			const response = await axios.post(
-            'https://api.groq.com/openai/v1/chat/completions',
-            {
-                model: 'llama3-70b-8192',
-                messages: [
-                {
-                    role: 'system',
-                    content: 'Summarize notes clearly in bullet points.',
-                },
-                {
-                    role: 'user',
-                    content,
-                },
-                ],
-                temperature: 0.5,
-                max_tokens: 500,
-            },
-            {
-                headers: {
-                Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-                'Content-Type': 'application/json',
-                },
-            }
-            );
+				'https://api.groq.com/openai/v1/chat/completions',
+				{
+					model: 'llama-3.3-70b-versatile',
+					messages: [
+						{
+							role: 'system',
+							content:
+								'You are an AI assistant that summarizes student notes into clear bullet points with key concepts and definitions.',
+						},
+						{
+							role: 'user',
+							content: `Summarize the following notes:\n\n${safeContent}`,
+						},
+					],
+					temperature: 0.5,
+					max_tokens: 500,
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+						'Content-Type': 'application/json',
+					},
+				}
+			);
 
 			summary = response.data.choices[0].message.content;
 		} catch (error) {
+			const providerMessage = error.response?.data?.error?.message || error.message;
 			console.error('Groq API Error:', error.response?.data || error.message);
-			// You can choose: fail OR continue without summary
 			return res.status(500).json({
-				message: 'Failed to generate summary, please wait one minute and try again.',
+				message: `Failed to summarize: ${providerMessage}`,
 			});
             
 		}
