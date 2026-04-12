@@ -17,12 +17,13 @@ function listFolders() {
   });
 }
 
-function createNote({ title, content, folderId }) {
+function createNote({ title, content, folderId, summary = null }) {
   const note = {
     id: String(noteCounter++),
     title: title.trim(),
     content: content.trim(),
     folderId: folderId || null,
+    summary,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

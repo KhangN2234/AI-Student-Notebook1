@@ -1,10 +1,17 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
 async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-    ...options,
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+      ...options,
+    });
+  } catch {
+    throw new Error(
+      `Cannot reach backend API (${API_BASE}). Make sure Backend is running with "npm run start".`
+    );
+  }
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));

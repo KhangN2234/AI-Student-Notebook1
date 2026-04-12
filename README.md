@@ -171,11 +171,10 @@ As a user, I want to view previously saved notes.
 |------|------------|--------|------|
 | Setup repository | Anna | Done | 3/31/26 |
 | Setup React and default UI page | Anna | Done | 4/4/26
-| UI for Note Taking page and Folders | Khang | WIP | 4/10/26
-
 | README + planning | Anna | In Progress | 4/4/26 |
 | Set up backend project (Node.js + Express server) | Anna | In Progress | 4/4/26 |
-
+| UI for Note Taking page and Folders | Khang | WIP | 4/10/26
+| Hook up API call to Groq | Khang | Done | 4/12/26
 ---
 
 ## 🧠 Notes
