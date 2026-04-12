@@ -83,6 +83,7 @@ router.post('/', async (req, res) => {
 		}
 	}
 
+	// TODO: Change to make sure it matches store.js when integrating database!!!!!!
 	const note = createNote({
 		title: safeTitle,
 		content: safeContent,
