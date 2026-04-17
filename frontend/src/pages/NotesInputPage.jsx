@@ -51,6 +51,7 @@ function NotesInputPage() {
         title: title.trim(),
         content: content.trim(),
         folderId: folderId || null,
+        summary: summary || null,
       });
 
       setStatusMessage('Note saved successfully. Redirecting...');
@@ -77,7 +78,11 @@ function NotesInputPage() {
         summarize: true,
       });
 
-      setSummary(data.note?.summary || 'No summary returned.');
+      const summaryText = data.summary || 
+                          data.note?.summary || 
+                          'No summary returned.';
+
+      setSummary(summaryText);
       setStatusMessage('Summary generated successfully.');
     } catch (err) {
       setStatusMessage(err.message || 'Unable to summarize note.');

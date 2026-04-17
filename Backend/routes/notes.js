@@ -16,34 +16,24 @@ router.get('/', (_req, res) => {
 	res.json({ notes: listNotes() });
 });
 
+// req is info from front end, res is what to send back
 router.post('/', async (req, res) => {
-	const { title, content, folderId, summarize } = req.body || {};
+	const { title, content, folderId, summarize, summary } = req.body || {};
 	const safeTitle = typeof title === 'string' ? title.trim() : '';
 	const safeContent = typeof content === 'string' ? content.trim() : '';
 
-    // Checking for user errors
-	if (!safeTitle || !safeContent) {
-		return res.status(400).json({ message: 'title and content are required.' });
+	if (!safeContent) {
+		return res.status(400).json({ message: 'content is required.' });
 	}
-	if (folderId && !folderExists(folderId)) {
-		return res.status(400).json({ message: 'Invalid folderId.' });
-	}
-	let summary = null;
 
-    
-
-	// Only call Groq if summarize flag is true
 	if (summarize) {
-        if (!process.env.GROQ_API_KEY) {
-			return res.status(500).json({ message: 'Missing GROQ_API_KEY in environment.' });
+		if (!process.env.GROQ_API_KEY) {
+			return res.status(500).json({ message: 'Missing GROQ_API_KEY.' });
 		}
+
 		if (safeContent.length < 10) {
-			return res.status(400).json({ message: `Content too short to summarize (length: ${safeContent.length}).` });
-        }
-		if (safeContent.length > 6001) {
-			return res.status(400).json({ message: 'Content too big, please break it into smaller parts.' });
-        }
-		
+			return res.status(400).json({ message: 'Content too short to summarize.' });
+		}
 
 		try {
 			const response = await axios.post(
@@ -53,12 +43,11 @@ router.post('/', async (req, res) => {
 					messages: [
 						{
 							role: 'system',
-							content:
-								'You are an AI assistant that summarizes student notes into clear bullet points with key concepts and definitions.',
+							content: 'Summarize notes into clear bullet points.',
 						},
 						{
 							role: 'user',
-							content: `Summarize the following notes:\n\n${safeContent}`,
+							content: safeContent,
 						},
 					],
 					temperature: 0.5,
@@ -72,25 +61,37 @@ router.post('/', async (req, res) => {
 				}
 			);
 
-			summary = response.data.choices[0].message.content;
+			const summary = response.data.choices[0].message.content;
+
+			// Return just the summary without saving the note
+			return res.json({ summary });
+
 		} catch (error) {
-			const providerMessage = error.response?.data?.error?.message || error.message;
-			console.error('Groq API Error:', error.response?.data || error.message);
+			console.error('Groq Error:', error.response?.data || error.message);
 			return res.status(500).json({
-				message: `Failed to summarize: ${providerMessage}`,
+				message: 'Failed to generate summary.',
 			});
-            
 		}
 	}
 
-	// TODO: Change to make sure it matches store.js when integrating database!!!!!!
+	// Normal Save (No summary)
+
+	if (!safeTitle) {
+		return res.status(400).json({ message: 'title is required.' });
+	}
+
+	if (folderId && !folderExists(folderId)) {
+		return res.status(400).json({ message: 'Invalid folderId.' });
+	}
+
 	const note = createNote({
 		title: safeTitle,
 		content: safeContent,
 		folderId,
-		summary,
+		summary: summary || null,
 	});
 
+	// Return
 	res.status(201).json({ note });
 });
 
