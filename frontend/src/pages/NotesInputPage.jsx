@@ -46,46 +46,13 @@ function NotesInputPage() {
     try {
       setSaving(true);
       setStatusMessage('');
-
-      await createNote({
-        title: title.trim(),
-        content: content.trim(),
-        folderId: folderId || null,
-        summary: summary || null,
-      });
-
-      setStatusMessage('Note saved successfully. Redirecting...');
+      await createNote({ title: title.trim(), content: content.trim(), folderId: folderId || null });
+      setStatusMessage('Note saved successfully. Redirecting to your notes...');
       setTimeout(() => navigate('/notes'), 800);
     } catch (err) {
       setStatusMessage(err.message || 'Unable to save note.');
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function handleSummarize() {
-    if (!content.trim()) {
-      setStatusMessage('Please enter note content before summarizing.');
-      return;
-    }
-
-    try {
-      setStatusMessage('');
-      const data = await createNote({
-        title: title || 'Temp Note',
-        content,
-        folderId: folderId || null,
-        summarize: true,
-      });
-
-      const summaryText = data.summary || 
-                          data.note?.summary || 
-                          'No summary returned.';
-
-      setSummary(summaryText);
-      setStatusMessage('Summary generated successfully.');
-    } catch (err) {
-      setStatusMessage(err.message || 'Unable to summarize note.');
     }
   }
 
