@@ -1,19 +1,16 @@
 import { useState, useEffect } from 'react';
-import { getFolders, getNotes, createFolder, renameFolder, deleteFolder } from '../services/api';
+import { getFolders, getNotes, renameFolder, deleteFolder } from '../services/api';
 import FolderItem from './FolderItem';
 import './FoldersSidebar.css';
 
-function FoldersSidebar({ selectedNoteId, onSelectNote }) {
+function FoldersSidebar({ selectedNoteId, onSelectNote, refreshKey = 0 }) {
   const [folders, setFolders] = useState([]);
   const [notes, setNotes] = useState([]);
   const [expandedFolders, setExpandedFolders] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showNewFolderInput, setShowNewFolderInput] = useState(false);
-  const [newFolderName, setNewFolderName] = useState('');
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
 
-  // Load folders and notes on mount
+  // Load folders and notes on mount and when externally refreshed
   useEffect(() => {
     async function loadData() {
       try {
@@ -51,7 +48,7 @@ function FoldersSidebar({ selectedNoteId, onSelectNote }) {
     }
 
     loadData();
-  }, []);
+  }, [refreshKey]);
 
   // Toggle folder expanded state
   function handleToggleFolder(folderId) {
@@ -59,34 +56,6 @@ function FoldersSidebar({ selectedNoteId, onSelectNote }) {
       ...prev,
       [folderId]: !prev[folderId],
     }));
-  }
-
-  // Handle new folder creation
-  async function handleCreateFolder() {
-    if (!newFolderName.trim()) {
-      return;
-    }
-
-    try {
-      setIsCreatingFolder(true);
-      const response = await createFolder({ name: newFolderName });
-      const newFolder = response.folder || response;
-
-      setFolders((prev) => [...prev, newFolder]);
-      setNewFolderName('');
-      setShowNewFolderInput(false);
-
-      // Auto-expand the new folder
-      setExpandedFolders((prev) => ({
-        ...prev,
-        [newFolder.id]: true,
-      }));
-    } catch (err) {
-      console.error('Error creating folder:', err);
-      setError(err.message || 'Failed to create folder');
-    } finally {
-      setIsCreatingFolder(false);
-    }
   }
 
   // Handle folder rename
@@ -130,12 +99,6 @@ function FoldersSidebar({ selectedNoteId, onSelectNote }) {
     }
   }
 
-  // Handle cancel new folder input
-  function handleCancelNewFolder() {
-    setShowNewFolderInput(false);
-    setNewFolderName('');
-  }
-
   if (loading) {
     return <div className="folders-sidebar loading">Loading folders...</div>;
   }
@@ -144,7 +107,7 @@ function FoldersSidebar({ selectedNoteId, onSelectNote }) {
   const unsortedNotes = notes.filter((n) => !n.folderId);
   const unsortedFolder = {
     id: 'unsorted',
-    name: 'Unsorted',
+    name: 'Unsorted Notes',
     isUnsorted: true,
   };
 
@@ -190,51 +153,6 @@ function FoldersSidebar({ selectedNoteId, onSelectNote }) {
         ))}
       </div>
 
-      {/* New Folder Input */}
-      <div className="new-folder-section">
-        {!showNewFolderInput ? (
-          <button
-            className="new-folder-button"
-            onClick={() => setShowNewFolderInput(true)}
-            disabled={isCreatingFolder}
-          >
-            + New Folder
-          </button>
-        ) : (
-          <div className="new-folder-input-group">
-            <input
-              type="text"
-              className="new-folder-input"
-              placeholder="Folder name..."
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleCreateFolder();
-                } else if (e.key === 'Escape') {
-                  handleCancelNewFolder();
-                }
-              }}
-              autoFocus
-              disabled={isCreatingFolder}
-            />
-            <button
-              className="confirm-button"
-              onClick={handleCreateFolder}
-              disabled={isCreatingFolder || !newFolderName.trim()}
-            >
-              {isCreatingFolder ? '...' : '✓'}
-            </button>
-            <button
-              className="cancel-button"
-              onClick={handleCancelNewFolder}
-              disabled={isCreatingFolder}
-            >
-              ✕
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

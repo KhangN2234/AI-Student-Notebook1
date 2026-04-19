@@ -76,7 +76,6 @@ p {
 .nav-link {
   display: block;
   text-decoration: none;
-  color: #1f2937;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.6rem 0.75rem;
@@ -92,6 +91,42 @@ p {
 .nav-link-active {
   border-color: #cfa707;
   background: #f2f7c5;
+}
+
+/* New Note and New Folder button group */
+.sidebar-create-group {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.sidebar-new-folder-btn {
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar-new-folder-input-group {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.35rem;
+}
+
+.sidebar-new-folder-input {
+  min-width: 0;
+}
+
+/* Check mark and undo button when clicking new folder */
+.sidebar-new-folder-action {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  padding: 0.45rem 0.55rem;
+}
+
+.sidebar-new-folder-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /*-----------------------------------------------------*/
@@ -114,6 +149,7 @@ p {
   border-radius: 0.75rem;
   padding: 1rem;
   background: white;
+  width: 20em;
 } .card p {
   margin-bottom: 10px;
 }

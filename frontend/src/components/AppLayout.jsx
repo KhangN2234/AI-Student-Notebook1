@@ -1,10 +1,10 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useState } from 'react';
 import FoldersSidebar from './FoldersSidebar';
+import { createFolder } from '../services/api';
 
 const navItems1 = [
   { to: '/', label: 'Dashboard', end: true },
-  { to: '/folders', label: 'Folders' },
 ];
 
 const navItems2 = [
@@ -13,6 +13,34 @@ const navItems2 = [
 
 function AppLayout() {
   const [selectedNoteId, setSelectedNoteId] = useState(null);
+  const [showNewFolderInput, setShowNewFolderInput] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [folderRefreshKey, setFolderRefreshKey] = useState(0);
+
+  async function handleCreateFolder() {
+    const safeName = newFolderName.trim();
+    if (!safeName) {
+      return;
+    }
+
+    try {
+      setIsCreatingFolder(true);
+      await createFolder({ name: safeName });
+      setNewFolderName('');
+      setShowNewFolderInput(false);
+      setFolderRefreshKey((prev) => prev + 1);
+    } catch (err) {
+      console.error('Error creating folder:', err);
+    } finally {
+      setIsCreatingFolder(false);
+    }
+  }
+
+  function handleCancelCreateFolder() {
+    setShowNewFolderInput(false);
+    setNewFolderName('');
+  }
 
   return (
     <div className="app-shell">
@@ -21,12 +49,8 @@ function AppLayout() {
           <div className="sidebar-top">
             <p className="eyebrow">AI Student Notebook</p>
             <h1>Study Better</h1>
-          </div>
-
-          {/* Middle / Scrollable (folders) */}
-          <div className="sidebar-middle">
-            {/* New Notes Link */}
-            {navItems2.map((item) => (
+                        <div className="sidebar-create-group">
+              {navItems2.map((item) => (
                 <NavLink
                   key={item.to}
                   end={item.end}
@@ -39,10 +63,63 @@ function AppLayout() {
                 </NavLink>
               ))}
 
+              {!showNewFolderInput ? (
+                <button
+                  className="nav-link sidebar-new-folder-btn"
+                  type="button"
+                  onClick={() => setShowNewFolderInput(true)}
+                  disabled={isCreatingFolder}
+                >
+                  + New Folder
+                </button>
+              ) : (
+                <div className="sidebar-new-folder-input-group">
+                  <input
+                    className="sidebar-new-folder-input"
+                    type="text"
+                    placeholder="Folder name..."
+                    value={newFolderName}
+                    onChange={(event) => setNewFolderName(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        handleCreateFolder();
+                      } else if (event.key === 'Escape') {
+                        handleCancelCreateFolder();
+                      }
+                    }}
+                    autoFocus
+                    disabled={isCreatingFolder}
+                  />
+                  <button
+                    className="sidebar-new-folder-action"
+                    type="button"
+                    onClick={handleCreateFolder}
+                    disabled={isCreatingFolder || !newFolderName.trim()}
+                  >
+                    {isCreatingFolder ? '...' : '✓'}
+                  </button>
+                  <button
+                    className="sidebar-new-folder-action"
+                    type="button"
+                    onClick={handleCancelCreateFolder}
+                    disabled={isCreatingFolder}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+
+          </div>
+
+          {/* Middle / Scrollable (folders) */}
+          <div className="sidebar-middle">
+
             {/* Folder Tree */}
             <FoldersSidebar 
               selectedNoteId={selectedNoteId} 
               onSelectNote={setSelectedNoteId}
+              refreshKey={folderRefreshKey}
             />
           </div>
 

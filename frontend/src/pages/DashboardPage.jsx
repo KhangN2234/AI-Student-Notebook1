@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
 
 const quickActions = [
-  { to: '/notes/new', title: 'New Note', copy: 'Capture notes quickly with title and folder.' },
-  { to: '/folders', title: 'Manage Folders', copy: 'Organize notes by class or topic.' },
+  { to: '/notes/new', title: 'New Note', copy: 'Capture notes quickly with title and folder.' }
 ];
 
 function DashboardPage() {

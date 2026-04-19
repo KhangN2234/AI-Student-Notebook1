@@ -55,17 +55,11 @@
   min-width: 0;
 }
 
-.folder-count {
-  font-size: 0.85em;
-  opacity: 0.7;
-  white-space: nowrap;
-}
-
 .folder-rename-input {
   flex: 1;
   padding: 0.25rem 0.5rem;
   background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.5);
+  border: 1px solid rgba(231, 234, 238, 0.5);
   border-radius: 3px;
   color: inherit;
   font-family: inherit;
@@ -111,20 +105,22 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Rename, delete menu */
 .folder-context-menu {
   position: absolute;
   top: 100%;
   left: 0;
+  background-color: white;
   margin-top: 0.25rem;
-  background-color: rgba(0, 0, 0, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 4px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  box-shadow: 9px 9px 6px 0px rgba(0, 0, 0, 0.1);
   z-index: 10;
   min-width: 120px;
   overflow: hidden;
 }
 
+/* Rename and delete button */
 .menu-item {
   display: block;
   width: 100%;
@@ -132,15 +128,13 @@
   text-align: left;
   background: none;
   border: none;
-  color: inherit;
-  font-family: inherit;
-  font-size: inherit;
   cursor: pointer;
-  transition: background-color 0.15s ease-in-out;
+  transition: 0.1s ease-in-out;
 }
 
 .menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  background-color: grey;
 }
 
 .menu-item.delete-item:hover {
@@ -180,12 +174,12 @@
 }
 
 .note-item.selected {
-  background-color: rgba(59, 130, 246, 0.3);
+  background-color: rgba(255, 255, 255, 0.3);
   font-weight: 500;
 }
 
 .note-item.selected:hover {
-  background-color: rgba(59, 130, 246, 0.4);
+  background-color: rgba(255, 255, 255, 0.4);
 }
 
 .note-title {

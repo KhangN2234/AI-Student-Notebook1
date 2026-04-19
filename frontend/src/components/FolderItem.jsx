@@ -119,13 +119,13 @@ function FolderItem({
             {showMenu && (
               <div className="folder-context-menu">
                 <button
-                  className="menu-item rename-item"
+                  className="menu-item"
                   onClick={handleRenameStart}
                 >
                   Rename
                 </button>
                 <button
-                  className="menu-item delete-item"
+                  className="menu-item"
                   onClick={handleDeleteClick}
                 >
                   Delete
@@ -142,7 +142,7 @@ function FolderItem({
           role="button"
           tabIndex={0}
           aria-expanded={isExpanded}
-          aria-label={`${folder.name} folder with ${noteCount} ${noteCount === 1 ? 'note' : 'notes'}`}
+          aria-label={`${folder.name} folder`}
         >
           <span
             className={`folder-icon ${isExpanded ? 'expanded' : ''}`}
@@ -170,9 +170,6 @@ function FolderItem({
           ) : (
             <span className="folder-name">
               {folder.name}
-              <span className="folder-count">
-                ({noteCount === 0 ? 'empty' : noteCount})
-              </span>
             </span>
           )}
         </div>
@@ -200,9 +197,7 @@ function FolderItem({
                 </button>
               </li>
             ))
-          ) : (
-            <li className="no-notes">No notes yet</li>
-          )}
+          ) : null}
         </ul>
       )}
     </div>
