@@ -37,8 +37,23 @@ export async function getFolders() {
   return request('/folders');
 }
 
+export async function listFolders() {
+  return request('/folders');
+}
+
 export async function createFolder(payload) {
   return request('/folders', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function renameFolder(folderId, newName) {
+  return request(`/folders/${folderId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ name: newName }),
+  });
+}
+
+export async function deleteFolder(folderId) {
+  return request(`/folders/${folderId}`, { method: 'DELETE' });
 }
 
 export async function assignNoteToFolder(noteId, folderId) {
@@ -46,6 +61,14 @@ export async function assignNoteToFolder(noteId, folderId) {
     method: 'PATCH',
     body: JSON.stringify({ folderId }),
   });
+}
+
+export async function moveNoteToFolder(noteId, folderId) {
+  return assignNoteToFolder(noteId, folderId);
+}
+
+export async function deleteNote(noteId) {
+  return request(`/notes/${noteId}`, { method: 'DELETE' });
 }
 
 export async function generateSummary(payload) {

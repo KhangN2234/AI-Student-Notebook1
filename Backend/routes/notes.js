@@ -8,6 +8,7 @@ const {
 	getNoteById,
 	listNotes,
 	updateNoteFolder,
+	deleteNote,
 } = require('../src/data/store');
 
 const router = express.Router();
@@ -116,6 +117,15 @@ router.patch('/:id/folder', (req, res) => {
 	}
 
 	res.json({ note });
+});
+
+router.delete('/:id', (req, res) => {
+	const success = deleteNote(req.params.id);
+	if (!success) {
+		return res.status(404).json({ message: 'Note not found.' });
+	}
+
+	res.json({ message: 'Note deleted successfully.' });
 });
 
 module.exports = router;

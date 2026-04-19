@@ -1,0 +1,212 @@
+import { useState } from 'react';
+import './FolderItem.css';
+
+function FolderItem({
+  folder,
+  isExpanded,
+  onToggle,
+  onSelectNote,
+  selectedNoteId,
+  notes,
+  onRenameFolder,
+  onDeleteFolder,
+}) {
+  const [focusedNoteIndex, setFocusedNoteIndex] = useState(-1);
+  const [showMenu, setShowMenu] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renamingName, setRenamingName] = useState(folder.name);
+
+  // Filter notes for this folder
+  const folderNotes = notes.filter((note) => note.folderId === folder.id);
+  const noteCount = folderNotes.length;
+  const isUnsorted = folder.isUnsorted === true;
+
+  // Handle folder click to expand/collapse
+  function handleFolderClick() {
+    onToggle(folder.id);
+  }
+
+  // Handle keyboard navigation within folder
+  function handleFolderKeyDown(event) {
+    // If expanded, allow arrow down to focus first note
+    if (isExpanded && event.key === 'ArrowDown') {
+      event.preventDefault();
+      setFocusedNoteIndex(0);
+    }
+    // Enter key toggles expand/collapse
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      onToggle(folder.id);
+    }
+  }
+
+  // Handle keyboard navigation within notes list
+  function handleNoteKeyDown(event, index) {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (index < folderNotes.length - 1) {
+        setFocusedNoteIndex(index + 1);
+      }
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (index > 0) {
+        setFocusedNoteIndex(index - 1);
+      } else {
+        // Arrow up from first note goes back to folder
+        setFocusedNoteIndex(-1);
+      }
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      onSelectNote(folderNotes[index].id);
+    }
+  }
+
+  // Handle menu button click
+  function handleMenuClick(event) {
+    event.stopPropagation();
+    setShowMenu(!showMenu);
+  }
+
+  // Handle rename start
+  function handleRenameStart(event) {
+    event.stopPropagation();
+    setIsRenaming(true);
+    setShowMenu(false);
+  }
+
+  // Handle rename submit
+  async function handleRenameSubmit() {
+    if (renamingName.trim() && renamingName !== folder.name) {
+      try {
+        await onRenameFolder(folder.id, renamingName);
+      } catch (err) {
+        console.error('Error renaming folder:', err);
+      }
+    }
+    setIsRenaming(false);
+    setRenamingName(folder.name);
+  }
+
+  // Handle rename cancel
+  function handleRenameCancel() {
+    setIsRenaming(false);
+    setRenamingName(folder.name);
+  }
+
+  // Handle delete click
+  function handleDeleteClick(event) {
+    event.stopPropagation();
+    setShowMenu(false);
+    
+    if (window.confirm('Are you sure you want to delete this folder? This action cannot be undone.')) {
+      onDeleteFolder(folder.id);
+    }
+  }
+
+  return (
+    <div className="folder-item">
+      <div className="folder-header-wrapper">
+        {!isUnsorted && (
+          <div className="folder-menu-wrapper">
+            <button
+              className="folder-menu-button"
+              onClick={handleMenuClick}
+              aria-label={`Menu for ${folder.name}`}
+              aria-expanded={showMenu}
+            >
+              ⋮
+            </button>
+            {showMenu && (
+              <div className="folder-context-menu">
+                <button
+                  className="menu-item rename-item"
+                  onClick={handleRenameStart}
+                >
+                  Rename
+                </button>
+                <button
+                  className="menu-item delete-item"
+                  onClick={handleDeleteClick}
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div
+          className="folder-header"
+          onClick={handleFolderClick}
+          onKeyDown={handleFolderKeyDown}
+          role="button"
+          tabIndex={0}
+          aria-expanded={isExpanded}
+          aria-label={`${folder.name} folder with ${noteCount} ${noteCount === 1 ? 'note' : 'notes'}`}
+        >
+          <span
+            className={`folder-icon ${isExpanded ? 'expanded' : ''}`}
+            aria-hidden="true"
+          >
+            ▶
+          </span>
+          {isRenaming ? (
+            <input
+              type="text"
+              className="folder-rename-input"
+              value={renamingName}
+              onChange={(e) => setRenamingName(e.target.value)}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+                if (e.key === 'Enter') {
+                  handleRenameSubmit();
+                } else if (e.key === 'Escape') {
+                  handleRenameCancel();
+                }
+              }}
+              onBlur={handleRenameSubmit}
+              autoFocus
+            />
+          ) : (
+            <span className="folder-name">
+              {folder.name}
+              <span className="folder-count">
+                ({noteCount === 0 ? 'empty' : noteCount})
+              </span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      {isExpanded && (
+        <ul className="folder-notes-list">
+          {folderNotes.length > 0 ? (
+            folderNotes.map((note, index) => (
+              <li key={note.id}>
+                <button
+                  className={`note-item ${
+                    selectedNoteId === note.id ? 'selected' : ''
+                  }`}
+                  onClick={() => onSelectNote(note.id)}
+                  onKeyDown={(event) => handleNoteKeyDown(event, index)}
+                  ref={(el) => {
+                    if (focusedNoteIndex === index && el) {
+                      el.focus();
+                    }
+                  }}
+                  aria-current={selectedNoteId === note.id ? 'page' : undefined}
+                >
+                  <span className="note-title">{note.title}</span>
+                </button>
+              </li>
+            ))
+          ) : (
+            <li className="no-notes">No notes yet</li>
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export default FolderItem;

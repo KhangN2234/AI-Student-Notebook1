@@ -1,4 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { useState } from 'react';
+import FoldersSidebar from './FoldersSidebar';
 
 const navItems1 = [
   { to: '/', label: 'Dashboard', end: true },
@@ -10,6 +12,8 @@ const navItems2 = [
 ];
 
 function AppLayout() {
+  const [selectedNoteId, setSelectedNoteId] = useState(null);
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -19,8 +23,9 @@ function AppLayout() {
             <h1>Study Better</h1>
           </div>
 
-          {/* Middle / Scrollable (folders later) */}
+          {/* Middle / Scrollable (folders) */}
           <div className="sidebar-middle">
+            {/* New Notes Link */}
             {navItems2.map((item) => (
                 <NavLink
                   key={item.to}
@@ -33,9 +38,12 @@ function AppLayout() {
                   {item.label}
                 </NavLink>
               ))}
-            {/* Future folder tree goes here */}
-            {/* <FolderTree /> */}
-            
+
+            {/* Folder Tree */}
+            <FoldersSidebar 
+              selectedNoteId={selectedNoteId} 
+              onSelectNote={setSelectedNoteId}
+            />
           </div>
 
           {/* Bottom / Actions */}
@@ -58,7 +66,7 @@ function AppLayout() {
           </div>
         </aside>
       <main className="content-area">
-        <Outlet />
+        <Outlet context={{ selectedNoteId, onSelectNote: setSelectedNoteId }} />
       </main>
     </div>
   );
