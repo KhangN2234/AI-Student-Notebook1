@@ -186,7 +186,7 @@ As a user, I want to view previously saved notes.
 | UI for Note Taking page | Khang | Done | 4/10/26
 | Backend (Node.js + express) is setup | Khang | Done | 4/12/26
 | Hook up API call to Groq | Khang | Done | 4/12/26
-| Folders feature implementation | Khang | WIP | 4/18/26
+| Folders feature implementation | Khang | Done | 4/18/26
 
 ---
 
