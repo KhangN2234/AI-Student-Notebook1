@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getFolders, getNotes, renameFolder, deleteFolder } from '../services/api';
+import { getFolders, getNotes, renameFolder, deleteFolder, deleteNote } from '../services/api';
 import FolderItem from './FolderItem';
 import './FoldersSidebar.css';
 
@@ -99,6 +99,20 @@ function FoldersSidebar({ selectedNoteId, onSelectNote, refreshKey = 0 }) {
     }
   }
 
+  async function handleDeleteNote(noteId) {
+    try {
+      await deleteNote(noteId);
+      setNotes((prev) => prev.filter((note) => note.id !== noteId));
+      if (selectedNoteId === noteId) {
+        onSelectNote(null);
+      }
+    } catch (err) {
+      console.error('Error deleting note:', err);
+      setError(err.message || 'Failed to delete note');
+      throw err;
+    }
+  }
+
   if (loading) {
     return <div className="folders-sidebar loading">Loading folders...</div>;
   }
@@ -135,6 +149,7 @@ function FoldersSidebar({ selectedNoteId, onSelectNote, refreshKey = 0 }) {
           notes={unsortedNotes}
           onRenameFolder={handleRenameFolder}
           onDeleteFolder={handleDeleteFolder}
+          onDeleteNote={handleDeleteNote}
         />
 
         {/* Regular folders */}
@@ -149,6 +164,7 @@ function FoldersSidebar({ selectedNoteId, onSelectNote, refreshKey = 0 }) {
             notes={notes}
             onRenameFolder={handleRenameFolder}
             onDeleteFolder={handleDeleteFolder}
+            onDeleteNote={handleDeleteNote}
           />
         ))}
       </div>

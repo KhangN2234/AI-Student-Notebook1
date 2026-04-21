@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import FoldersSidebar from './FoldersSidebar';
 import { createFolder } from '../services/api';
@@ -12,6 +12,8 @@ const navItems2 = [
 ];
 
 function AppLayout() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [selectedNoteId, setSelectedNoteId] = useState(null);
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -44,6 +46,21 @@ function AppLayout() {
   function handleCancelCreateFolder() {
     setShowNewFolderInput(false);
     setNewFolderName('');
+  }
+
+  function handlePrimaryNavClick(path) {
+    if (path === '/') {
+      setSelectedNoteId(null);
+    }
+  }
+
+  function handleSidebarNoteSelect(noteId) {
+    setSelectedNoteId(noteId);
+
+    // Note details currently render in dashboard content area.
+    if (location.pathname !== '/') {
+      navigate('/');
+    }
   }
 
   return (
@@ -122,7 +139,7 @@ function AppLayout() {
             {/* Folder Tree */}
             <FoldersSidebar 
               selectedNoteId={selectedNoteId} 
-              onSelectNote={setSelectedNoteId}
+              onSelectNote={handleSidebarNoteSelect}
               refreshKey={folderRefreshKey}
             />
           </div>
@@ -135,6 +152,7 @@ function AppLayout() {
                   key={item.to}
                   end={item.end}
                   to={item.to}
+                  onClick={() => handlePrimaryNavClick(item.to)}
                   className={({ isActive }) =>
                     isActive ? 'nav-link nav-link-active' : 'nav-link'
                   }
@@ -150,7 +168,7 @@ function AppLayout() {
         <Outlet
           context={{
             selectedNoteId,
-            onSelectNote: setSelectedNoteId,
+            onSelectNote: handleSidebarNoteSelect,
             triggerFoldersRefresh,
           }}
         />

@@ -317,6 +317,21 @@ a:focus-visible {
   font-weight: 600;
 }
 
+.note-detail-pane {
+  display: grid;
+  gap: 1rem;
+}
+
+.note-detail-body {
+  white-space: pre-wrap;
+  border: 1px solid #d8e1ec;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  background: #ffffff;
+  min-height: 10rem;
+  line-height: 1.5;
+}
+
 @media (max-width: 700px) {
   .note-form-card {
     padding: 1rem;

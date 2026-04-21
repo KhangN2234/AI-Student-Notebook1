@@ -125,11 +125,11 @@
   color: inherit;
   font-family: inherit;
   font-size: inherit;
-  transition: background-color 0.15s ease-in-out;
+  transition: background-color 0.1s ease-in-out;
 }
 
 .note-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgb(240, 239, 239);
 }
 
 .note-item:focus-visible {
@@ -143,7 +143,7 @@
 }
 
 .note-item.selected:hover {
-  background-color: rgba(255, 255, 255, 0.4);
+  background-color: rgb(240, 239, 239);
 }
 
 .note-title {

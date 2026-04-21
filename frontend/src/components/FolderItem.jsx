@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './FolderItem.css';
 
 function FolderItem({
@@ -10,16 +11,22 @@ function FolderItem({
   notes,
   onRenameFolder,
   onDeleteFolder,
+  onDeleteNote,
 }) {
+  const navigate = useNavigate();
   const [focusedNoteIndex, setFocusedNoteIndex] = useState(-1);
   const [showMenu, setShowMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const [showNoteMenu, setShowNoteMenu] = useState(false);
+  const [noteMenuPosition, setNoteMenuPosition] = useState({ x: 0, y: 0 });
+  const [noteMenuTargetId, setNoteMenuTargetId] = useState(null);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renamingName, setRenamingName] = useState(folder.name);
   const menuRef = useRef(null);
+  const noteMenuRef = useRef(null);
 
   useEffect(() => {
-    if (!showMenu) {
+    if (!showMenu && !showNoteMenu) {
       return;
     }
 
@@ -27,11 +34,15 @@ function FolderItem({
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setShowMenu(false);
       }
+      if (noteMenuRef.current && !noteMenuRef.current.contains(event.target)) {
+        setShowNoteMenu(false);
+      }
     }
 
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
         setShowMenu(false);
+        setShowNoteMenu(false);
       }
     }
 
@@ -42,7 +53,7 @@ function FolderItem({
       window.removeEventListener('mousedown', handlePointerDown);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showMenu]);
+  }, [showMenu, showNoteMenu]);
 
   // Filter notes for this folder
   const isUnsorted = folder.isUnsorted === true;
@@ -53,6 +64,7 @@ function FolderItem({
   // Handle folder click to expand/collapse
   function handleFolderClick() {
     setShowMenu(false);
+    setShowNoteMenu(false);
     onToggle(folder.id);
   }
 
@@ -81,7 +93,34 @@ function FolderItem({
       x: Math.max(viewportPadding, x),
       y: Math.max(viewportPadding, y),
     });
+    setShowNoteMenu(false);
     setShowMenu(true);
+  }
+
+  function handleNoteContextMenu(event, noteId) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const MENU_WIDTH = 180;
+    const MENU_HEIGHT = 120;
+    const viewportPadding = 8;
+
+    const x = Math.min(
+      event.clientX,
+      window.innerWidth - MENU_WIDTH - viewportPadding
+    );
+    const y = Math.min(
+      event.clientY,
+      window.innerHeight - MENU_HEIGHT - viewportPadding
+    );
+
+    setNoteMenuPosition({
+      x: Math.max(viewportPadding, x),
+      y: Math.max(viewportPadding, y),
+    });
+    setNoteMenuTargetId(noteId);
+    setShowMenu(false);
+    setShowNoteMenu(true);
   }
 
   // Handle keyboard navigation within folder
@@ -152,6 +191,44 @@ function FolderItem({
     
     if (window.confirm('Are you sure you want to delete this folder? This action cannot be undone.')) {
       onDeleteFolder(folder.id);
+    }
+  }
+
+  function handleOpenNote(event) {
+    event.stopPropagation();
+    if (noteMenuTargetId) {
+      onSelectNote(noteMenuTargetId);
+    }
+    setShowNoteMenu(false);
+  }
+
+  function handleGenerateQuestions(event) {
+    event.stopPropagation();
+    if (noteMenuTargetId) {
+      onSelectNote(noteMenuTargetId);
+      navigate(`/notes/${noteMenuTargetId}/questions`);
+    }
+    setShowNoteMenu(false);
+  }
+
+  async function handleDeleteNoteClick(event) {
+    event.stopPropagation();
+    if (!noteMenuTargetId || !onDeleteNote) {
+      setShowNoteMenu(false);
+      return;
+    }
+
+    const confirmed = window.confirm('Are you sure you want to delete this note? This action cannot be undone.');
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await onDeleteNote(noteMenuTargetId);
+    } catch (err) {
+      console.error('Error deleting note:', err);
+    } finally {
+      setShowNoteMenu(false);
     }
   }
 
@@ -229,7 +306,12 @@ function FolderItem({
                   className={`note-item ${
                     selectedNoteId === note.id ? 'selected' : ''
                   }`}
-                  onClick={() => onSelectNote(note.id)}
+                  onClick={() => {
+                    setShowMenu(false);
+                    setShowNoteMenu(false);
+                    onSelectNote(note.id);
+                  }}
+                  onContextMenu={(event) => handleNoteContextMenu(event, note.id)}
                   onKeyDown={(event) => handleNoteKeyDown(event, index)}
                   ref={(el) => {
                     if (focusedNoteIndex === index && el) {
@@ -240,6 +322,24 @@ function FolderItem({
                 >
                   <span className="note-title">{note.title}</span>
                 </button>
+
+                {showNoteMenu && noteMenuTargetId === note.id ? (
+                  <div
+                    ref={noteMenuRef}
+                    className="folder-context-menu"
+                    style={{ left: `${noteMenuPosition.x}px`, top: `${noteMenuPosition.y}px` }}
+                  >
+                    <button className="menu-item" onClick={handleOpenNote}>
+                      Open
+                    </button>
+                    <button className="menu-item" onClick={handleGenerateQuestions}>
+                      Generate Questions
+                    </button>
+                    <button className="menu-item delete-item" onClick={handleDeleteNoteClick}>
+                      Delete
+                    </button>
+                  </div>
+                ) : null}
               </li>
             ))
           ) : null}
