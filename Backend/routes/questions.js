@@ -1,29 +1,75 @@
 const express = require('express');
+const axios = require('axios');
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
-	const { content } = req.body || {};
-	if (!content || !content.trim()) {
-		return res.status(400).json({ message: 'Note content is required.' });
-	}
+router.post('/', async (req, res) => {
+  const { content } = req.body || {};
 
-	const words = content
-		.replace(/[^a-zA-Z0-9\s]/g, ' ')
-		.toLowerCase()
-		.split(/\s+/)
-		.filter((word) => word.length >= 5);
+  if (!content || !content.trim()) {
+    return res.status(400).json({ message: 'Note content is required.' });
+  }
 
-	const unique = [...new Set(words)].slice(0, 5);
-	const questions = unique.length
-		? unique.map((word, index) => `${index + 1}. Explain the role of "${word}" in this note.`)
-		: [
-				'1. What are the three most important ideas in this note?',
-				'2. How would you teach this topic to a classmate?',
-				'3. Which part needs more evidence or examples?',
-			];
+  if (!process.env.GROQ_API_KEY) {
+    return res.status(500).json({ message: 'Missing GROQ_API_KEY.' });
+  }
 
-	res.json({ questions });
+  try {
+    const response = await axios.post(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: `
+Generate 3-5 study questions from the notes.
+For each question, provide:
+- question
+- correct answer
+- short explanation
+
+Return ONLY JSON in this format:
+[
+  {
+    "question": "...",
+    "answer": "...",
+    "explanation": "..."
+  }
+]
+            `,
+          },
+          {
+            role: 'user',
+            content,
+          },
+        ],
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const raw = response.data.choices[0].message.content;
+
+    // Try parsing AI output
+    let questions;
+    try {
+      questions = JSON.parse(raw);
+    } catch {
+      return res.status(500).json({ message: 'AI returned invalid format.' });
+    }
+
+    res.json({ questions });
+
+  } catch (error) {
+    console.error(error.response?.data || error.message);
+    res.status(500).json({ message: 'Failed to generate questions.' });
+  }
 });
 
 module.exports = router;
