@@ -4,8 +4,10 @@ import { generateQuestions, getNoteById } from '../services/api';
 
 function QuestionsPage() {
   const { id } = useParams();
+
   const [note, setNote] = useState(null);
   const [questions, setQuestions] = useState([]);
+
   const [answers, setAnswers] = useState({});
   const [results, setResults] = useState([]);
 
@@ -14,10 +16,31 @@ function QuestionsPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    getNoteById(id)
-      .then((data) => setNote(data.note || null))
-      .catch((requestError) => setError(requestError.message))
-      .finally(() => setLoading(false));
+    async function loadAndGenerate() {
+      try {
+        const data = await getNoteById(id);
+        const fetchedNote = data.note || null;
+        setNote(fetchedNote);
+
+        if (fetchedNote) {
+          setGenerating(true);
+
+          const qData = await generateQuestions({
+            noteId: id,
+            content: fetchedNote.content,
+          });
+
+          setQuestions(qData.questions || []);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+        setGenerating(false);
+      }
+    }
+
+    loadAndGenerate();
   }, [id]);
 
   async function handleGenerate() {
@@ -26,7 +49,11 @@ function QuestionsPage() {
     try {
       setGenerating(true);
       setError('');
-      const data = await generateQuestions({ noteId: id, content: note.content });
+      const data = await generateQuestions({
+        noteId: id,
+        content: note.content,
+      });
+
       setQuestions(data.questions || []);
       setAnswers({});
       setResults([]);
@@ -37,18 +64,20 @@ function QuestionsPage() {
     }
   }
 
-  function handleAnswerChange(index, value) {
-    setAnswers((prev) => ({
-      ...prev,
-      [index]: value,
-    }));
-  }
-
   function handleSubmit() {
-    const resultsArray = questions.map((_, index) => {
-      return answers[index]?.trim() ? '✅ Answered' : '❌ Missing';
+    const resultsArray = questions.map((q, index) => {
+      const userAnswer = answers[index]?.trim();
+
+      return {
+        question: q.question,
+        correctAnswer: q.answer,
+        explanation: q.explanation,
+        userAnswer: userAnswer || '',
+        status: userAnswer ? 'answered' : 'missing',
+      };
     });
 
+    console.log(resultsArray);
     setResults(resultsArray);
   }
 
@@ -60,31 +89,38 @@ function QuestionsPage() {
     <section>
       <h2>Active Recall Questions</h2>
 
-      <button
-        className="button"
-        disabled={generating || !note}
-        onClick={handleGenerate}
-      >
-        {generating ? 'Generating...' : 'Generate Questions'}
-      </button>
+      {questions.length === 0 && (
+        <button
+          className="button"
+          disabled={generating || !note}
+          onClick={handleGenerate}
+          >
+          {generating ? 'Generating...' : 'Generate Questions'}
+        </button>
+      )}
 
-      {error ? <p className="error-text">{error}</p> : null}
+      {error && <p className="error-text">{error}</p>}
 
       {questions.length > 0 && (
         <>
           <ol className="question-list">
-            {questions.map((question, index) => (
-              <li key={index}>
-                <p>{question}</p>
+            {questions.map((q, index) => (
+              <li key={index} className="question-card">
+                <p>
+                  <strong>Q{index + 1}:</strong> {q.question}
+                </p>
 
                 <input
                   type="text"
-                  placeholder="Type your answer..."
+                  placeholder="Your answer..."
                   value={answers[index] || ''}
-                  onChange={(e) => handleAnswerChange(index, e.target.value)}
+                  onChange={(e) =>
+                    setAnswers((prev) => ({
+                      ...prev,
+                      [index]: e.target.value,
+                    }))
+                  }
                 />
-
-                {results[index] && <p>{results[index]}</p>}
               </li>
             ))}
           </ol>
