@@ -44,7 +44,7 @@ router.post('/', async (req, res) => {
 					messages: [
 						{
 							role: 'system',
-							content: 'Summarize notes into clear bullet points.',
+							content: 'Summarize notes into clear bullet points. Do not write anything extra like "Here is the note summarize", etc',
 						},
 						{
 							role: 'user',

@@ -90,7 +90,7 @@ function NoteDetailPage({ noteId, onDeleted }) {
       </article>
 
       {note.summary ? (
-        <section className="card">
+        <section className="note-detail-body">
           <h3>Summary</h3>
           <p>{note.summary}</p>
         </section>

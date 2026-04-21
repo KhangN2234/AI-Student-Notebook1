@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 import { createNote } from '../services/api';
 
 function NotesInputPage() {
-  const navigate = useNavigate();
-  const { triggerFoldersRefresh } = useOutletContext();
+  const { onSelectNote, triggerFoldersRefresh } = useOutletContext();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -48,17 +47,23 @@ function NotesInputPage() {
       setSaving(true);
       setStatusMessage('');
 
-      await createNote({
+      const data = await createNote({
         title: title.trim(),
         content: content.trim(),
         folderId: folderId || null,
         summary: summary || null,
       });
 
+      const createdNoteId = data?.note?.id;
+
       triggerFoldersRefresh();
 
-      setStatusMessage('Note saved successfully. Redirecting...');
-      setTimeout(() => navigate('/'), 800);
+      if (createdNoteId) {
+        setStatusMessage('Note saved successfully. Redirecting...');
+        onSelectNote(createdNoteId);
+      } else {
+        setStatusMessage('Note saved successfully.');
+      }
     } catch (err) {
       setStatusMessage(err.message || 'Unable to save note.');
     } finally {
@@ -174,7 +179,7 @@ function NotesInputPage() {
         </div>
 
         {summary && (
-          <div className="summary-box">
+          <div className="note-detail-body">
             <h3>Summary</h3>
             <p>{summary}</p>
           </div>
