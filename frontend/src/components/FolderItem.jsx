@@ -45,8 +45,10 @@ function FolderItem({
   }, [showMenu]);
 
   // Filter notes for this folder
-  const folderNotes = notes.filter((note) => note.folderId === folder.id);
   const isUnsorted = folder.isUnsorted === true;
+  const folderNotes = isUnsorted
+    ? notes
+    : notes.filter((note) => note.folderId === folder.id);
 
   // Handle folder click to expand/collapse
   function handleFolderClick() {

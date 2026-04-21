@@ -18,6 +18,10 @@ function AppLayout() {
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
 
+  function triggerFoldersRefresh() {
+    setFolderRefreshKey((prev) => prev + 1);
+  }
+
   async function handleCreateFolder() {
     const safeName = newFolderName.trim();
     if (!safeName) {
@@ -143,7 +147,13 @@ function AppLayout() {
           </div>
         </aside>
       <main className="content-area">
-        <Outlet context={{ selectedNoteId, onSelectNote: setSelectedNoteId }} />
+        <Outlet
+          context={{
+            selectedNoteId,
+            onSelectNote: setSelectedNoteId,
+            triggerFoldersRefresh,
+          }}
+        />
       </main>
     </div>
   );

@@ -199,7 +199,7 @@ Ensure `frontend/src/services/api.js` exports:
 
 ### Prompt 4.1: Complete Backend Folder Routes (Single-Shot)
 Review/enhance `Backend/routes/folders.js` to ensure:
-- GET /api/folders - list all folders with note counts ✓
+- GET /api/folders
 - POST /api/folders - create folder
 - PATCH /api/folders/:id - rename folder (update name in store.js)
 - DELETE /api/folders/:id - delete folder (update store.js)

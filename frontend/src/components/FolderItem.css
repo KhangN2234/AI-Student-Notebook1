@@ -19,7 +19,6 @@
   cursor: pointer;
   user-select: none;
   border-radius: 4px;
-  transition: background-color 0.1s ease-in-out;
   flex: 1;
   min-width: 0;
   position: relative;

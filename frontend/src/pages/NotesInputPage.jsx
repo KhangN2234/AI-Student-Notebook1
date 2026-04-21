@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { createNote } from '../services/api';
 
 function NotesInputPage() {
   const navigate = useNavigate();
+  const { triggerFoldersRefresh } = useOutletContext();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -54,8 +55,10 @@ function NotesInputPage() {
         summary: summary || null,
       });
 
+      triggerFoldersRefresh();
+
       setStatusMessage('Note saved successfully. Redirecting...');
-      setTimeout(() => navigate('/notes'), 800);
+      setTimeout(() => navigate('/'), 800);
     } catch (err) {
       setStatusMessage(err.message || 'Unable to save note.');
     } finally {
