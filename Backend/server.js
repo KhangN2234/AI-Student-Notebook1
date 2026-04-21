@@ -1,22 +1,47 @@
-const dotenv = require('dotenv');
-dotenv.config();
+require('dotenv').config();
 
-const express = require('express');
 const cors = require('cors');
+const express = require('express');
+const healthRoutes = require('./routes/health');
 const notesRoutes = require('./routes/notes');
+const foldersRoutes = require('./routes/folders');
+const questionsRoutes = require('./routes/questions');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const port = process.env.PORT || 4000;
 
-app.use(cors());
-app.use(express.json());
+app.use(
+	cors({
+		origin: (origin, callback) => {
+			if (!origin) {
+				return callback(null, true);
+			}
 
-app.use('/api', notesRoutes);
+			const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+			if (isLocalhost) {
+				return callback(null, true);
+			}
 
-app.get('/', (req, res) => {
-  res.json({ message: 'AI Student Notebook API is running.' });
+			if (process.env.CORS_ORIGIN && origin === process.env.CORS_ORIGIN) {
+				return callback(null, true);
+			}
+
+			return callback(new Error('CORS not allowed'));
+		},
+	})
+);
+app.use(express.json({ limit: '1mb' }));
+
+app.use('/api/health', healthRoutes);
+app.use('/api/notes', notesRoutes);
+app.use('/api/folders', foldersRoutes);
+app.use('/api/questions', questionsRoutes);
+
+app.use((err, _req, res, _next) => {
+	console.error(err);
+	res.status(500).json({ message: 'Internal server error.' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(port, () => {
+	console.log(`Backend API running on http://localhost:${port}`);
 });

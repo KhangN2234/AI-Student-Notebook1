@@ -137,7 +137,7 @@ As a user, I want to view previously saved notes.
 
 - Frontend: React  
 - Backend: Node.js with Express  
-- AI Integration: OpenAI API  
+- AI Integration: Groq API  
 - Database: MongoDB (or local storage for initial version)  
 
 ---
@@ -158,10 +158,20 @@ As a user, I want to view previously saved notes.
 - Set up project folder structure and README
 - Replaced default UI with basic app layout
 
+### Week of April 12
+
+- Backend setup.
+- UI for website is now up and running.
+- Can create notes and summarization.
+- Folders can be created. 
+- API calls to Groq now works. Rather than pay 5 bucks for OpenAI, Groq is free.
+
 **Next:**
 
-- Setup Backend
-- Begin working on AI summary functionality
+- Continue working on the folders feature
+- Ability to save notes.
+- Work on creating active recall page. Too complex, not sure how to do it. Probably last thing to be implemented.
+- Setup database to save user's progress and log in information.
 
 ---
 
@@ -171,9 +181,12 @@ As a user, I want to view previously saved notes.
 |------|------------|--------|------|
 | Setup repository | Anna | Done | 3/31/26 |
 | Setup React and default UI page | Anna | Done | 4/4/26
-
 | README + planning | Anna | In Progress | 4/4/26 |
 | Set up backend project (Node.js + Express server) | Anna | In Progress | 4/4/26 |
+| UI for Note Taking page | Khang | Done | 4/10/26
+| Backend (Node.js + express) is setup | Khang | Done | 4/12/26
+| Hook up API call to Groq | Khang | Done | 4/12/26
+| Folders feature implementation | Khang | Done | 4/18/26
 
 ---
 
