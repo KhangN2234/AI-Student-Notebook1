@@ -28,6 +28,11 @@
   background-color: rgb(240, 239, 239);
 }
 
+.folder-header.drop-target {
+  background-color: #e5f3ff;
+  outline: 1px solid #60a5fa;
+}
+
 .folder-header:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: -2px;

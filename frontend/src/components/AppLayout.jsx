@@ -19,9 +19,14 @@ function AppLayout() {
   const [newFolderName, setNewFolderName] = useState('');
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
+  const [noteDetailRefreshKey, setNoteDetailRefreshKey] = useState(0);
 
   function triggerFoldersRefresh() {
     setFolderRefreshKey((prev) => prev + 1);
+  }
+
+  function triggerSelectedNoteRefresh() {
+    setNoteDetailRefreshKey((prev) => prev + 1);
   }
 
   async function handleCreateFolder() {
@@ -141,6 +146,7 @@ function AppLayout() {
               selectedNoteId={selectedNoteId} 
               onSelectNote={handleSidebarNoteSelect}
               refreshKey={folderRefreshKey}
+              onSelectedNoteMoved={triggerSelectedNoteRefresh}
             />
           </div>
 
@@ -170,6 +176,7 @@ function AppLayout() {
             selectedNoteId,
             onSelectNote: handleSidebarNoteSelect,
             triggerFoldersRefresh,
+            noteDetailRefreshKey,
           }}
         />
       </main>

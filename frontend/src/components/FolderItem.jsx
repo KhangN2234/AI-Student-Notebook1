@@ -12,6 +12,7 @@ function FolderItem({
   onRenameFolder,
   onDeleteFolder,
   onDeleteNote,
+  onMoveNote,
 }) {
   const navigate = useNavigate();
   const [focusedNoteIndex, setFocusedNoteIndex] = useState(-1);
@@ -21,6 +22,7 @@ function FolderItem({
   const [noteMenuPosition, setNoteMenuPosition] = useState({ x: 0, y: 0 });
   const [noteMenuTargetId, setNoteMenuTargetId] = useState(null);
   const [isRenaming, setIsRenaming] = useState(false);
+  const [isDropTarget, setIsDropTarget] = useState(false);
   const [renamingName, setRenamingName] = useState(folder.name);
   const menuRef = useRef(null);
   const noteMenuRef = useRef(null);
@@ -66,6 +68,74 @@ function FolderItem({
     setShowMenu(false);
     setShowNoteMenu(false);
     onToggle(folder.id);
+  }
+
+  function handleFolderDragOver(event) {
+    if (!onMoveNote) {
+      return;
+    }
+
+    const transferTypes = Array.from(event.dataTransfer.types || []);
+    const hasNotePayload =
+      transferTypes.includes('application/x-note-id') || transferTypes.includes('text/plain');
+
+    if (!hasNotePayload) {
+      return;
+    }
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    setIsDropTarget(true);
+  }
+
+  function handleFolderDragLeave() {
+    setIsDropTarget(false);
+  }
+
+  async function handleFolderDrop(event) {
+    if (!onMoveNote) {
+      return;
+    }
+
+    event.preventDefault();
+    setIsDropTarget(false);
+
+    const draggedNoteId =
+      event.dataTransfer.getData('application/x-note-id') ||
+      event.dataTransfer.getData('text/plain');
+    const sourceFolderIdRaw = event.dataTransfer.getData('application/x-note-folder-id');
+    if (!draggedNoteId) {
+      return;
+    }
+
+    const sourceFolderId =
+      sourceFolderIdRaw && sourceFolderIdRaw !== '__UNSORTED__'
+        ? sourceFolderIdRaw
+        : null;
+    const targetFolderId = isUnsorted ? null : folder.id;
+
+    if (sourceFolderId === targetFolderId) {
+      return;
+    }
+
+    await onMoveNote(draggedNoteId, targetFolderId);
+  }
+
+  function handleNoteDragStart(event, note) {
+    event.stopPropagation();
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('application/x-note-id', note.id);
+    event.dataTransfer.setData('text/plain', note.id);
+    event.dataTransfer.setData(
+      'application/x-note-folder-id',
+      note.folderId || '__UNSORTED__'
+    );
+    setShowMenu(false);
+    setShowNoteMenu(false);
+  }
+
+  function handleNoteDragEnd() {
+    setIsDropTarget(false);
   }
 
   function handleFolderContextMenu(event) {
@@ -236,10 +306,13 @@ function FolderItem({
     <div className="folder-item">
       <div className="folder-header-wrapper">
         <div
-          className="folder-header"
+          className={`folder-header ${isDropTarget ? 'drop-target' : ''}`}
           onClick={handleFolderClick}
           onContextMenu={handleFolderContextMenu}
           onKeyDown={handleFolderKeyDown}
+          onDragOver={handleFolderDragOver}
+          onDragLeave={handleFolderDragLeave}
+          onDrop={handleFolderDrop}
           role="button"
           tabIndex={0}
           aria-expanded={isExpanded}
@@ -306,6 +379,9 @@ function FolderItem({
                   className={`note-item ${
                     selectedNoteId === note.id ? 'selected' : ''
                   }`}
+                  draggable
+                  onDragStart={(event) => handleNoteDragStart(event, note)}
+                  onDragEnd={handleNoteDragEnd}
                   onClick={() => {
                     setShowMenu(false);
                     setShowNoteMenu(false);

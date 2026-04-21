@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { createNote } from '../services/api';
+import { createNote, getFolders } from '../services/api';
 
 function NotesInputPage() {
   const { onSelectNote, triggerFoldersRefresh } = useOutletContext();
@@ -8,11 +8,27 @@ function NotesInputPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [folderId, setFolderId] = useState('');
+  const [folders, setFolders] = useState([]);
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState({ title: '', content: '' });
 
   const [summary, setSummary] = useState('');
+
+  useEffect(() => {
+    async function loadFolders() {
+      try {
+        const data = await getFolders();
+        const folderList = Array.isArray(data) ? data : data.folders || [];
+        // Unsorted is represented by null folderId in notes, so keep it as default option.
+        setFolders(folderList.filter((folder) => folder.id !== 'unsorted'));
+      } catch (err) {
+        setStatusMessage(err.message || 'Unable to load folders. Saving to Unsorted is still available.');
+      }
+    }
+
+    loadFolders();
+  }, []);
 
   function validateForm() {
     const nextErrors = { title: '', content: '' };
@@ -126,6 +142,22 @@ function NotesInputPage() {
             {fieldErrors.title}
           </p>
         ) : null}
+
+        <label htmlFor="note-folder">
+          Folder
+          <select
+            id="note-folder"
+            value={folderId}
+            onChange={(event) => setFolderId(event.target.value)}
+          >
+            <option value="">Unsorted Notes</option>
+            {folders.map((folder) => (
+              <option key={folder.id} value={folder.id}>
+                {folder.name}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <label className="upload-placeholder" htmlFor="upload-placeholder-input">
           Upload notes file (coming soon)

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { deleteNote, getNoteById } from '../services/api';
 
 
-function NoteDetailPage({ noteId, onDeleted }) {
+function NoteDetailPage({ noteId, onDeleted, refreshKey = 0 }) {
   const navigate = useNavigate();
   const [note, setNote] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -34,7 +34,7 @@ function NoteDetailPage({ noteId, onDeleted }) {
     }
 
     loadNote();
-  }, [noteId]);
+  }, [noteId, refreshKey]);
 
   async function handleDelete() {
     if (!note) {

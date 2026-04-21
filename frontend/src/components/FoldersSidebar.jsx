@@ -1,9 +1,16 @@
 import { useState, useEffect } from 'react';
-import { getFolders, getNotes, renameFolder, deleteFolder, deleteNote } from '../services/api';
+import {
+  getFolders,
+  getNotes,
+  renameFolder,
+  deleteFolder,
+  deleteNote,
+  moveNoteToFolder,
+} from '../services/api';
 import FolderItem from './FolderItem';
 import './FoldersSidebar.css';
 
-function FoldersSidebar({ selectedNoteId, onSelectNote, refreshKey = 0 }) {
+function FoldersSidebar({ selectedNoteId, onSelectNote, refreshKey = 0, onSelectedNoteMoved }) {
   const [folders, setFolders] = useState([]);
   const [notes, setNotes] = useState([]);
   const [expandedFolders, setExpandedFolders] = useState({});
@@ -113,6 +120,42 @@ function FoldersSidebar({ selectedNoteId, onSelectNote, refreshKey = 0 }) {
     }
   }
 
+  async function handleMoveNote(noteId, targetFolderId) {
+    const currentNote = notes.find((note) => note.id === noteId);
+    if (!currentNote) {
+      return;
+    }
+
+    const sourceFolderId = currentNote.folderId || null;
+    if (sourceFolderId === targetFolderId) {
+      return;
+    }
+
+    // Optimistic move for immediate UI feedback.
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === noteId
+          ? { ...note, folderId: targetFolderId || null, updatedAt: new Date().toISOString() }
+          : note
+      )
+    );
+
+    try {
+      await moveNoteToFolder(noteId, targetFolderId || null);
+      if (selectedNoteId === noteId && onSelectedNoteMoved) {
+        onSelectedNoteMoved();
+      }
+    } catch (err) {
+      console.error('Error moving note:', err);
+      setError(err.message || 'Failed to move note');
+
+      // Roll back by reloading notes from server.
+      const notesRes = await getNotes();
+      const notesList = Array.isArray(notesRes) ? notesRes : notesRes.notes || [];
+      setNotes(notesList);
+    }
+  }
+
   if (loading) {
     return <div className="folders-sidebar loading">Loading folders...</div>;
   }
@@ -150,6 +193,7 @@ function FoldersSidebar({ selectedNoteId, onSelectNote, refreshKey = 0 }) {
           onRenameFolder={handleRenameFolder}
           onDeleteFolder={handleDeleteFolder}
           onDeleteNote={handleDeleteNote}
+          onMoveNote={handleMoveNote}
         />
 
         {/* Regular folders */}
@@ -165,6 +209,7 @@ function FoldersSidebar({ selectedNoteId, onSelectNote, refreshKey = 0 }) {
             onRenameFolder={handleRenameFolder}
             onDeleteFolder={handleDeleteFolder}
             onDeleteNote={handleDeleteNote}
+            onMoveNote={handleMoveNote}
           />
         ))}
       </div>

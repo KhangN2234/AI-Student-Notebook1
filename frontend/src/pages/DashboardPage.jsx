@@ -6,7 +6,7 @@ const quickActions = [
 ];
 
 function DashboardPage() {
-  const { selectedNoteId, onSelectNote, triggerFoldersRefresh } = useOutletContext();
+  const { selectedNoteId, onSelectNote, triggerFoldersRefresh, noteDetailRefreshKey } = useOutletContext();
 
   function handleNoteDeleted() {
     onSelectNote(null);
@@ -14,7 +14,13 @@ function DashboardPage() {
   }
 
   if (selectedNoteId) {
-    return <NoteDetailPage noteId={selectedNoteId} onDeleted={handleNoteDeleted} />;
+    return (
+      <NoteDetailPage
+        noteId={selectedNoteId}
+        onDeleted={handleNoteDeleted}
+        refreshKey={noteDetailRefreshKey}
+      />
+    );
   }
 
   return (
