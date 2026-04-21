@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './FolderItem.css';
 
 function FolderItem({
@@ -13,17 +13,73 @@ function FolderItem({
 }) {
   const [focusedNoteIndex, setFocusedNoteIndex] = useState(-1);
   const [showMenu, setShowMenu] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isRenaming, setIsRenaming] = useState(false);
   const [renamingName, setRenamingName] = useState(folder.name);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!showMenu) {
+      return;
+    }
+
+    function handlePointerDown(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setShowMenu(false);
+      }
+    }
+
+    window.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('mousedown', handlePointerDown);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showMenu]);
 
   // Filter notes for this folder
   const folderNotes = notes.filter((note) => note.folderId === folder.id);
-  const noteCount = folderNotes.length;
   const isUnsorted = folder.isUnsorted === true;
 
   // Handle folder click to expand/collapse
   function handleFolderClick() {
+    setShowMenu(false);
     onToggle(folder.id);
+  }
+
+  function handleFolderContextMenu(event) {
+    if (isUnsorted) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const MENU_WIDTH = 130;
+    const MENU_HEIGHT = 84;
+    const viewportPadding = 8;
+
+    const x = Math.min(
+      event.clientX,
+      window.innerWidth - MENU_WIDTH - viewportPadding
+    );
+    const y = Math.min(
+      event.clientY,
+      window.innerHeight - MENU_HEIGHT - viewportPadding
+    );
+
+    setMenuPosition({
+      x: Math.max(viewportPadding, x),
+      y: Math.max(viewportPadding, y),
+    });
+    setShowMenu(true);
   }
 
   // Handle keyboard navigation within folder
@@ -59,12 +115,6 @@ function FolderItem({
       event.preventDefault();
       onSelectNote(folderNotes[index].id);
     }
-  }
-
-  // Handle menu button click
-  function handleMenuClick(event) {
-    event.stopPropagation();
-    setShowMenu(!showMenu);
   }
 
   // Handle rename start
@@ -106,38 +156,10 @@ function FolderItem({
   return (
     <div className="folder-item">
       <div className="folder-header-wrapper">
-        {!isUnsorted && (
-          <div className="folder-menu-wrapper">
-            <button
-              className="folder-menu-button"
-              onClick={handleMenuClick}
-              aria-label={`Menu for ${folder.name}`}
-              aria-expanded={showMenu}
-            >
-              ⋮
-            </button>
-            {showMenu && (
-              <div className="folder-context-menu">
-                <button
-                  className="menu-item"
-                  onClick={handleRenameStart}
-                >
-                  Rename
-                </button>
-                <button
-                  className="menu-item"
-                  onClick={handleDeleteClick}
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
         <div
           className="folder-header"
           onClick={handleFolderClick}
+          onContextMenu={handleFolderContextMenu}
           onKeyDown={handleFolderKeyDown}
           role="button"
           tabIndex={0}
@@ -171,6 +193,27 @@ function FolderItem({
             <span className="folder-name">
               {folder.name}
             </span>
+          )}
+
+          {!isUnsorted && showMenu && (
+            <div
+              ref={menuRef}
+              className="folder-context-menu"
+              style={{ left: `${menuPosition.x}px`, top: `${menuPosition.y}px` }}
+            >
+              <button
+                className="menu-item"
+                onClick={handleRenameStart}
+              >
+                Rename
+              </button>
+              <button
+                className="menu-item delete-item"
+                onClick={handleDeleteClick}
+              >
+                Delete
+              </button>
+            </div>
           )}
         </div>
       </div>
