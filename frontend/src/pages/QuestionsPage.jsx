@@ -15,6 +15,16 @@ function QuestionsPage() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
 
+  function gradeAnswer(userAnswer, correctAnswer) {
+    if (!userAnswer) return 'missing';
+
+    if (userAnswer.length < correctAnswer.length * 0.5) {
+      return 'partial';
+    }
+
+    return 'correct';
+  }
+
   useEffect(() => {
     async function loadAndGenerate() {
       try {
@@ -73,7 +83,7 @@ function QuestionsPage() {
         correctAnswer: q.answer,
         explanation: q.explanation,
         userAnswer: userAnswer || '',
-        status: userAnswer ? 'answered' : 'missing',
+        status: gradeAnswer(userAnswer, q.answer),
       };
     });
 
@@ -94,7 +104,7 @@ function QuestionsPage() {
           className="button"
           disabled={generating || !note}
           onClick={handleGenerate}
-          >
+        >
           {generating ? 'Generating...' : 'Generate Questions'}
         </button>
       )}
@@ -121,6 +131,50 @@ function QuestionsPage() {
                     }))
                   }
                 />
+
+                {results[index] && (
+                  <div>
+                    <div
+                      style={{
+                        padding: '10px',
+                        marginTop: '10px',
+                        borderRadius: '6px',
+                        backgroundColor:
+                          results[index].status === 'correct'
+                            ? '#d4edda'
+                            : results[index].status === 'partial'
+                            ? '#fff3cd'
+                            : '#f8d7da',
+                        color:
+                          results[index].status === 'correct'
+                            ? '#155724'
+                            : results[index].status === 'partial'
+                            ? '#856404'
+                            : '#721c24',
+                      }}
+                    >
+                      <p>
+                        <strong>Your Answer:</strong>{' '}
+                        {results[index].userAnswer || 'No answer provided'}
+                      </p>
+
+                      <p style={{ marginTop: '4px', fontWeight: 'bold' }}>
+                        {results[index].status === 'correct' && 'Correct'}
+                        {results[index].status === 'partial' && 'Partially Correct'}
+                        {results[index].status === 'missing' && 'Incorrect'}
+                      </p>
+                    </div>
+
+                    <p>
+                      <strong>Correct Answer:</strong>{' '}
+                      {results[index].correctAnswer}
+                    </p>
+                    <p>
+                      <strong>Explanation:</strong>{' '}
+                      {results[index].explanation}
+                    </p>
+                  </div>
+                )}
               </li>
             ))}
           </ol>
