@@ -1,40 +1,70 @@
 # Active Recall Feature Implementation Prompts
 
 ## Overview
-Implement an active recall system where users can generate study questions from their notes, answer them interactively, and review their understanding. This feature builds on the existing `/api/questions` endpoint and enhances it with user interaction.
+Implement an active recall system where users can generate AI-powered study questions from their notes, answer them interactively, and receive immediate feedback including correctness, correct answers, and explanations.
 
 ---
 
 ## Design Decisions (User-Confirmed)
 
-1. **Question Generation Source:** Questions are generated from note content using backend API (`POST /api/questions`)
-2. **Simple Interaction First:** Users answer questions via text input (no complex grading required for MVP)
-3. **No Persistent Scoring (MVP):** Answers are not stored long-term initially
-4. **Expandable Feature:** Can later include multiple choice or correctness evaluation
-5. **Per-Note Context:** Questions are always tied to a specific note
-6. **Immediate Feedback:** Users see whether they answered or skipped
+1. **AI-Based Question Generation:** Questions, correct answers, and explanations are generated via backend API (`POST /api/questions`)
+2. **Per-Note Context:** Questions are always tied to a specific note
+3. **Auto-Generation with Fallback:** Questions generate automatically on page load, with optional manual regeneration
+4. **Free Response Input:** Users answer questions using text input
+5. **Basic Grading System (MVP):**
+   - Correct
+   - Partially Correct
+   - Incorrect / Missing
+6. **Heuristic Grading (MVP):**
+   - Uses simple length-based comparison (not semantic understanding)
+   - Designed to be replaceable with AI grading later
+7. **Visual Feedback System:**
+   - Green → Correct
+   - Yellow → Partial
+   - Red → Incorrect / Missing
+8. **Immediate Feedback:**
+   - Feedback is shown after submission
+   - Includes correct answer and explanation
+9. **No Persistent Scoring (MVP):** Results are not stored long-term
+10. **Future-Ready Design:** Structure allows future AI grading, progress tracking, and spaced repetition
 
 ---
 
 ## Phase 1: Question Generation
 
 ### Prompt 1.1: Generate Questions API Usage
-Enhance frontend to call existing backend:
+Frontend calls backend:
 - Endpoint: `POST /api/questions`
-- Payload: `{ content: note.content }`
-- Response: `{ questions: [...] }`
-- Triggered by button: "Generate Questions"
+- Payload: `{ noteId, content }` (noteId may be passed but is not required for generation)
+- Response:
+```json
+{
+  "questions": [
+    {
+      "question": "...",
+      "answer": "...",
+      "explanation": "..."
+    }
+  ]
+}
+```
+
+- Questions auto-generate on page load
+- Manual regeneration is not part of the primary MVP flow
 
 ---
 
 ## Phase 2: Questions UI
 
-### Prompt 2.1: QuestionsPage Enhancement
+### Prompt 2.1: QuestionsPage Implementation
 Enhance `frontend/src/pages/QuestionsPage.jsx` to:
 - Display generated questions in a structured list
 - Add input field for each question
-- Maintain local state for answers (`answers[index]`)
-- Provide clean layout for readability
+- Maintain local state:
+  - `questions`
+  - `answers`
+  - `results`
+- Provide clean, readable layout
 
 ---
 
@@ -42,28 +72,47 @@ Enhance `frontend/src/pages/QuestionsPage.jsx` to:
 Add functionality:
 - Each question has a corresponding input field
 - User types answer freely (no strict validation)
-- Track answers using React state
+- Track answers using React state (`answers[index]`)
 
 ---
 
-## Phase 3: Feedback System
+## Phase 3: Grading & Feedback System
 
 ### Prompt 3.1: Submit Answers
-Add a "Submit Quiz" button:
+Add a "Submit Answers" button:
 - On click:
-  - Check which answers are filled
-  - Generate simple feedback:
-    - "Answered"
-    - "Missing"
+  - Apply heuristic grading to each answer
+  - Assign status:
+    - `correct`
+    - `partial`
+    - `missing`
 - Store results in local state
 
 ---
 
 ### Prompt 3.2: Display Feedback
-Render results:
-- Show feedback under each question
-- Highlight unanswered questions
-- Optional: color indicators (green/red)
+Render results under each question:
+- Highlight **User Answer with color-coded background**
+- Display:
+  - User Answer
+  - Status (Correct / Partially Correct / Incorrect)
+- Reveal:
+  - Correct Answer
+  - Explanation
+
+- Color mapping:
+  - Green → Correct
+  - Yellow → Partial
+  - Red → Incorrect / Missing
+
+---
+
+### Prompt 3.3: Basic Grading Logic (MVP)
+- If no answer → `missing`
+- If answer length is less than 50% of correct answer → `partial`
+- Otherwise → `correct`
+
+Note: This grading is based on length only and does NOT evaluate semantic correctness.
 
 ---
 
@@ -73,15 +122,18 @@ Render results:
 Ensure:
 - QuestionsPage is accessed via `/notes/:id/questions`
 - Fetch note content before generating questions
-- Allow navigation back to note detail
+- Questions are tied to note content
 
 ---
 
-### Prompt 4.2: Future Integration Hook (IMPORTANT)
-Prepare for calendar integration:
-- Add button: "Schedule Review"
-- Does not need full implementation yet
-- Should trigger future calendar feature
+### Prompt 4.2: Future Integration Hooks
+Prepare for:
+- AI-based grading improvements
+- Progress tracking
+- Calendar-based review scheduling
+- Review sessions / spaced repetition
+
+(No implementation required yet — structure code to support this)
 
 ---
 
@@ -89,10 +141,14 @@ Prepare for calendar integration:
 
 ### Prompt 5.1: Active Recall Workflow Test
 1. Select note → navigate to QuestionsPage
-2. Generate questions successfully
+2. Questions auto-generate on load
 3. Questions render correctly
 4. User inputs answers
-5. Submit answers → feedback displays
+5. Submit answers → feedback displays:
+   - Color-coded status
+   - User answer highlighted
+   - Correct answer
+   - Explanation
 6. Navigation works correctly
 
 ---
@@ -100,6 +156,6 @@ Prepare for calendar integration:
 ## Implementation Notes
 
 - Keep UI simple and readable
-- Do not over-engineer scoring
-- Focus on interaction and flow
+- Do not over-engineer grading logic
+- Focus on clarity and interaction
 - This is an MVP feature — polish later
