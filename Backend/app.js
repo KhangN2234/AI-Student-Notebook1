@@ -6,6 +6,7 @@ const healthRoutes = require('./routes/health');
 const notesRoutes = require('./routes/notes');
 const foldersRoutes = require('./routes/folders');
 const questionsRoutes = require('./routes/questions');
+const scheduleRoutes = require('./routes/schedule');
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/notes', notesRoutes);
 app.use('/api/folders', foldersRoutes);
 app.use('/api/questions', questionsRoutes);
+app.use('/api/schedule', scheduleRoutes);
 
 app.use((err, _req, res, _next) => {
 	console.error(err);
