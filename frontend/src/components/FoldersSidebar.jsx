@@ -8,7 +8,6 @@ import {
   moveNoteToFolder,
 } from '../services/api';
 import FolderItem from './FolderItem';
-import './FoldersSidebar.css';
 
 function FoldersSidebar({ selectedNoteId, onSelectNote, refreshKey = 0, onSelectedNoteMoved }) {
   const [folders, setFolders] = useState([]);
