@@ -13,9 +13,9 @@ function App() {
         <Route element={<DashboardPage />} index />
         <Route element={<NotesInputPage />} path="notes/new" />
         <Route element={<QuestionsPage />} path="notes/:id/questions" />
+        <Route element={<CalendarPage />} path="calendar" />
       </Route>
       <Route element={<Navigate replace to="/" />} path="*" />
-      <Route element={<CalendarPage />} path="calendar" />
     </Routes>
   );
 }
