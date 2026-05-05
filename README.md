@@ -197,3 +197,12 @@ As a user, I want to view previously saved notes.
 - Progress will be tracked through README updates and team communication  
 
 ---
+To run frontend/backend:
+
+Move to frontend/backend directory
+
+Backend: npm run start
+
+Frontend: npm run dev
+
+*If one won't start, check that the port isn't already in use.
