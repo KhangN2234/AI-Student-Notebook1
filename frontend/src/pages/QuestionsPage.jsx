@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { generateQuestions, getNoteById } from '../services/api';
+import { generateSchedule } from '../services/api';
 
 function QuestionsPage() {
   const { id } = useParams();
@@ -74,7 +75,7 @@ function QuestionsPage() {
     }
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const resultsArray = questions.map((q, index) => {
       const userAnswer = answers[index]?.trim();
 
@@ -89,6 +90,12 @@ function QuestionsPage() {
 
     console.log(resultsArray);
     setResults(resultsArray);
+    try {
+      const data = await generateSchedule(resultsArray);
+      localStorage.setItem('reviewSchedule', JSON.stringify(data.schedule));
+    } catch (err) {
+      console.error('Failed to generate schedule:', err);
+    }
   }
 
   if (loading) {
