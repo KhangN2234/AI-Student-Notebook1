@@ -1,107 +1,164 @@
 # Calendar Feature Implementation Prompts
 
 ## Overview
-Implement a review scheduling calendar that visualizes when users should revisit generated questions. The calendar displays scheduled review dates, highlights the current day, and allows limited interaction for reviewing questions.
+Implement a calendar-based review scheduling system that allows users to visualize when they should revisit generated questions. The calendar integrates with the existing active recall system and displays scheduled review dates with limited interaction for MVP.
 
-This feature is **frontend-driven (localStorage-based)** for MVP and will later integrate with backend/database for persistence and scalability.
+---
+
+## Existing Layout Structure
+The app already uses a sidebar layout defined in `frontend/src/components/AppLayout.jsx`:
+
+- `.sidebar-top` - Logo and app title — **DO NOT MODIFY**
+- `.sidebar-middle` - Folder/navigation content — **DO NOT MODIFY STRUCTURE**
+- `.sidebar-bottom` - Main navigation (Dashboard, etc.)
+- `.content-area` - Main page content via `<Outlet />` — **CalendarPage renders here**
+
+**Key constraint:** Calendar must render inside `.content-area` and preserve existing sidebar behavior.
 
 ---
 
 ## Design Decisions (User-Confirmed)
 
-1. **LocalStorage MVP:** Review schedule is stored in localStorage under `reviewSchedule`.
-2. **Date Format:** Keys use `YYYY-MM-DD` format for consistency.
-3. **Month View Only:** Calendar displays one month at a time.
-4. **Navigation:** Users can move between months using `<` and `>` buttons.
-5. **Highlighting:**
-   - Current day is visually distinct
-   - Days with reviews are highlighted
-6. **Click Behavior:**
-   - Only **current day with scheduled questions** is clickable
-   - Future days are visible but disabled ("available later")
-7. **No Backend Yet:** Questions are NOT fetched per day yet — placeholder behavior only.
-8. **No Past Restriction:** Past days remain visible but not interactive for now.
+1. **LocalStorage Persistence:** Review schedule is stored under `reviewSchedule`
+2. **Date Format:** `YYYY-MM-DD`
+3. **Flat Monthly View:** Only one month displayed at a time
+4. **Navigation Controls:** Users can move between months
+5. **Limited Interaction (MVP):**
+   - Only today's scheduled reviews are clickable
+   - Future dates are locked
+6. **Visual Feedback Priority:** Users must clearly see:
+   - Which days have reviews
+   - Which day is today
+7. **No Backend Yet:** Schedule is not persisted server-side
+8. **Future Compatibility:** Must support database + spaced repetition later
 
 ---
 
-## Phase 1: Calendar Rendering
+## Phase 1: Page Setup
 
-### Prompt 1.1: Monthly Grid Layout
-Create a React calendar view that:
-- Displays current month and year
-- Uses a 7-column grid (Sun–Sat)
-- Calculates:
+### Prompt 1.1: Create CalendarPage Component (Single-Shot)
+Create `frontend/src/pages/CalendarPage.jsx` that:
+- Displays title "Review Calendar"
+- Renders inside existing layout (`AppLayout`)
+- Exports as default component
+- Will be registered to route `/calendar`
+
+---
+
+### Prompt 1.2: Add Route to App.jsx (Single-Shot)
+Update routing in `frontend/src/App.jsx`:
+- Add:
+  - `<Route path="/calendar" element={<CalendarPage />} />`
+- Ensure navigation works correctly
+
+---
+
+### Prompt 1.3: Add Navigation Link (Single-Shot)
+Update sidebar navigation in `AppLayout.jsx`:
+- Add "Calendar" under Dashboard
+- Ensure consistent styling with existing nav items
+- Clicking navigates to `/calendar`
+
+---
+
+## Phase 2: Data Integration
+
+### Prompt 2.1: Load Schedule Data (Single-Shot)
+Inside `CalendarPage.jsx`:
+- Retrieve schedule from localStorage:
+```js
+localStorage.getItem('reviewSchedule')
+```
+- Parse JSON
+- Store in React state
+
+---
+
+### Prompt 2.2: Schedule Structure Handling
+Ensure schedule follows format:
+```js
+{
+  "YYYY-MM-DD": numberOfQuestions
+}
+```
+
+- Safely handle missing or empty data
+- Default to empty object if null
+
+---
+
+## Phase 3: Calendar Grid Implementation
+
+### Prompt 3.1: Monthly Grid Layout (Single-Shot)
+Render a 7-column grid (Sunday → Saturday):
+- Calculate:
   - First day of month
-  - Number of days in month
-- Fills leading empty cells for alignment
-
-Each day cell:
-- Displays day number
-- Displays question count if present
+  - Days in month
+- Fill leading empty cells for alignment
 
 ---
 
-### Prompt 1.2: Load Schedule Data
-- Load schedule from localStorage:
-  ```js
-  localStorage.getItem('reviewSchedule')
-  ```
-- Parse JSON into object
-- Map schedule data into calendar cells
+### Prompt 3.2: Map Dates to Cells
+For each day:
+- Generate dateKey in `YYYY-MM-DD`
+- Lookup schedule:
+```js
+schedule[dateKey]
+```
+- Display:
+  - Day number
+  - Question count (if exists)
 
 ---
 
-## Phase 2: Visual Feedback
+## Phase 4: Visual Feedback
 
-### Prompt 2.1: Highlight States
-Apply visual styles:
-- Default → white background
+### Prompt 4.1: Highlight States (Single-Shot)
+Apply styles:
+- Default → white
 - Has questions → light blue
-- Current day → darker blue
-- Future scheduled → faded opacity
+- Today → stronger highlight
+- Future scheduled → reduced opacity
 
 ---
 
-### Prompt 2.2: Question Label
-Display text inside cells:
-- Format:
-  - Today → `X questions`
-  - Future → `X questions (available later)`
+### Prompt 4.2: Question Display Text
+Inside each day:
+- If questions exist:
+  - Today → "X questions"
+  - Future → "X questions (available later)"
 
-- Styling:
-  - Today → bold + underline + clickable color
-  - Future → reduced opacity
+- Ensure:
+  - Today is bold and underlined
+  - Future appears faded
 
 ---
 
-## Phase 3: Interaction
+## Phase 5: Interaction Logic
 
-### Prompt 3.1: Click Behavior (MVP)
-- Only allow clicking if:
-  - `item.count > 0`
-  - `item.dateKey === todayKey`
+### Prompt 5.1: Click Behavior (Single-Shot)
+Add click handler:
+- Only allow click if:
+```js
+item.count > 0 && item.dateKey === todayKey
+```
 
 - On click:
-  ```js
-  alert(`Review ${item.count} questions`)
-  ```
-
-- Future days:
-  - No click action
-  - Cursor: default
+```js
+alert(`Review ${item.count} questions`);
+```
 
 ---
 
-### Prompt 3.2: Cursor + UX Feedback
-- Today with questions → `cursor: pointer`
-- Future days → `cursor: default`
-- Make clickable text visually obvious
+### Prompt 5.2: Cursor Feedback
+- Today with questions → pointer cursor
+- All others → default cursor
 
 ---
 
-## Phase 4: Month Navigation
+## Phase 6: Month Navigation
 
-### Prompt 4.1: State Management
+### Prompt 6.1: Add State (Single-Shot)
 Add:
 ```js
 const [currentDate, setCurrentDate] = useState(new Date());
@@ -109,82 +166,59 @@ const [currentDate, setCurrentDate] = useState(new Date());
 
 ---
 
-### Prompt 4.2: Navigation Controls
+### Prompt 6.2: Navigation Controls
 Add buttons:
-- `<` → previous month
-- `>` → next month
+- `<` for previous month
+- `>` for next month
 
-Update state:
-```js
-setCurrentDate(new Date(year, month - 1));
-setCurrentDate(new Date(year, month + 1));
-```
+Update state accordingly
 
 ---
 
-### Prompt 4.3: Dynamic Calendar Rendering
-- Replace static `new Date()` usage
-- Use `currentDate` for:
-  - year
-  - month
-  - display header
+### Prompt 6.3: Dynamic Rendering
+Use `currentDate` for:
+- Month display
+- Year display
+- Calendar calculations
 
 ---
 
-## Phase 5: Integration Hooks (Future)
+## Phase 7: Integration & Future Work
 
-### Prompt 5.1: Backend Integration (Future)
+### Prompt 7.1: Active Recall Integration
+Ensure:
+- Schedule is generated from question results
+- Calendar reflects review schedule output
+
+---
+
+### Prompt 7.2: Future Enhancements
 Prepare for:
-- Fetching schedule from backend instead of localStorage
-- Storing:
-  - question IDs
-  - note IDs
-  - spaced repetition intervals
+- Backend schedule storage
+- Spaced repetition algorithm
+- Review session page (`/review/:date`)
+- Question retrieval by date
 
 ---
 
-### Prompt 5.2: Review Session Navigation (Future)
-Replace alert with:
-- Navigation to:
-  ```
-  /review/:date
-  ```
-- Load questions for selected day
+## Phase 8: Testing & Validation
 
----
-
-## Phase 6: Testing & Validation
-
-### Prompt 6.1: Calendar Workflow Test
-1. Schedule data exists in localStorage
-2. Calendar renders correct month layout
-3. Dates align correctly with weekdays
-4. Days with questions are highlighted
-5. Current day styling updates correctly
-6. Clicking today's questions triggers action
+### Prompt 8.1: Calendar Workflow Test
+1. Schedule loads from localStorage
+2. Calendar renders correctly
+3. Dates align properly
+4. Review days highlighted
+5. Today updates dynamically
+6. Click works only for today
 7. Future days are not clickable
-8. Month navigation updates view correctly
+8. Month navigation works
 
 ---
 
 ## Implementation Notes
 
-- Keep logic simple — no over-engineering
-- Do not integrate backend yet
-- Avoid complex date libraries (use native JS)
-- Focus on clarity and UX feedback
-- This is a visual + interaction MVP feature
-
----
-
-## Status
-
-✔ Calendar UI implemented  
-✔ Month navigation implemented  
-✔ Click logic (today-only) implemented  
-✔ LocalStorage integration working  
-
-Future work:
-- Backend persistence
-- Question retrieval per day
-- Spaced repetition algorithm
+- Keep UI simple and readable
+- Do not over-engineer logic
+- Avoid external date libraries
+- Maintain consistency with existing layout
+- Prioritize UX clarity
