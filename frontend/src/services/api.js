@@ -78,3 +78,19 @@ export async function generateSummary(payload) {
 export async function generateQuestions(payload) {
   return request('/questions', { method: 'POST', body: JSON.stringify(payload) });
 }
+
+export async function generateSchedule(results) {
+  const response = await fetch('http://localhost:4000/api/schedule', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ results }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to generate schedule');
+  }
+
+  return response.json();
+}
