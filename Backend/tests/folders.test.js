@@ -1,5 +1,22 @@
 const request = require('supertest');
 const app = require('../app');
+const {
+  setupMongoTestDatabase,
+  clearMongoTestDatabase,
+  teardownMongoTestDatabase,
+} = require('./mongoTestHelper');
+
+beforeAll(async () => {
+  await setupMongoTestDatabase();
+});
+
+afterEach(async () => {
+  await clearMongoTestDatabase();
+});
+
+afterAll(async () => {
+  await teardownMongoTestDatabase();
+});
 
 describe('POST /api/folders', () => {
   test('creates a folder with a valid name', async () => {

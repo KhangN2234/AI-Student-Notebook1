@@ -1,5 +1,6 @@
 const Folder = require('./Folder');
 const Note = require('./Note');
+const { isValidObjectId } = require('mongoose');
 
 function serializeFolder(folderDoc, noteCount = 0) {
 	if (!folderDoc) {
@@ -28,6 +29,10 @@ async function listFolders() {
 }
 
 async function getFolderById(folderId) {
+	if (!isValidObjectId(folderId)) {
+		return null;
+	}
+
 	const folder = await Folder.findById(folderId);
 	if (!folder) {
 		return null;
@@ -43,10 +48,14 @@ async function createFolder(name) {
 }
 
 async function renameFolder(folderId, newName) {
+	if (!isValidObjectId(folderId)) {
+		return null;
+	}
+
 	const folder = await Folder.findByIdAndUpdate(
 		folderId,
 		{ name: newName, updatedAt: new Date() },
-		{ new: true, runValidators: true }
+		{ returnDocument: 'after', runValidators: true }
 	);
 
 	if (!folder) {
@@ -58,6 +67,10 @@ async function renameFolder(folderId, newName) {
 }
 
 async function deleteFolder(folderId) {
+	if (!isValidObjectId(folderId)) {
+		return false;
+	}
+
 	const folder = await Folder.findByIdAndDelete(folderId);
 	if (!folder) {
 		return false;
@@ -74,6 +87,10 @@ async function deleteFolder(folderId) {
 async function folderExists(folderId) {
 	if (!folderId) {
 		return true;
+	}
+
+	if (!isValidObjectId(folderId)) {
+		return false;
 	}
 
 	const count = await Folder.countDocuments({ _id: folderId });

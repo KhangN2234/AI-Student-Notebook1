@@ -1,5 +1,22 @@
 const request = require('supertest');
 const app = require('../app');
+const {
+  setupMongoTestDatabase,
+  clearMongoTestDatabase,
+  teardownMongoTestDatabase,
+} = require('./mongoTestHelper');
+
+beforeAll(async () => {
+  await setupMongoTestDatabase();
+});
+
+afterEach(async () => {
+  await clearMongoTestDatabase();
+});
+
+afterAll(async () => {
+  await teardownMongoTestDatabase();
+});
 
 describe('POST /api/notes', () => {
   test('creates a note with valid title and content', async () => {
