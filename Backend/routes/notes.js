@@ -1,20 +1,25 @@
 const express = require('express');
 const axios = require('axios');
 
-
 const {
-	createNote,
-	folderExists,
-	getNoteById,
-	listNotes,
-	updateNoteFolder,
-	deleteNote,
-} = require('../src/data/store');
+  createNote,
+  getNoteById,
+  listNotes,
+  updateNoteFolder,
+  deleteNote,
+} = require('../src/models/noteRepository');
+const { folderExists } = require('../src/models/folderRepository');
 
 const router = express.Router();
 
-router.get('/', (_req, res) => {
-	res.json({ notes: listNotes() });
+router.get('/', async (_req, res) => {
+	try {
+		const notes = await listNotes();
+		res.json({ notes });
+	} catch (error) {
+		console.error('Error listing notes:', error);
+		res.status(500).json({ message: 'Failed to load notes.' });
+	}
 });
 
 // req is info from front end, res is what to send back
@@ -81,51 +86,70 @@ router.post('/', async (req, res) => {
 		return res.status(400).json({ message: 'title is required.' });
 	}
 
-	if (folderId && !folderExists(folderId)) {
+	if (folderId && !(await folderExists(folderId))) {
 		return res.status(400).json({ message: 'Invalid folderId.' });
 	}
 
-	const note = createNote({
-		title: safeTitle,
-		content: safeContent,
-		folderId,
-		summary: summary || null,
-	});
+	try {
+		const note = await createNote({
+			title: safeTitle,
+			content: safeContent,
+			folderId,
+			summary: summary || null,
+		});
 
-	// Return
-	res.status(201).json({ note });
-});
-
-
-router.get('/:id', (req, res) => {
-	const note = getNoteById(req.params.id);
-	if (!note) {
-		return res.status(404).json({ message: 'Note not found.' });
+		res.status(201).json({ note });
+	} catch (error) {
+		console.error('Error creating note:', error);
+		res.status(500).json({ message: 'Failed to create note.' });
 	}
-
-	res.json({ note });
 });
-router.patch('/:id/folder', (req, res) => {
+
+
+router.get('/:id', async (req, res) => {
+	try {
+		const note = await getNoteById(req.params.id);
+		if (!note) {
+			return res.status(404).json({ message: 'Note not found.' });
+		}
+
+		res.json({ note });
+	} catch (error) {
+		console.error('Error loading note:', error);
+		res.status(500).json({ message: 'Failed to load note.' });
+	}
+});
+router.patch('/:id/folder', async (req, res) => {
 	const { folderId } = req.body || {};
-	if (folderId && !folderExists(folderId)) {
+	if (folderId && !(await folderExists(folderId))) {
 		return res.status(400).json({ message: 'Invalid folderId.' });
 	}
 
-	const note = updateNoteFolder(req.params.id, folderId || null);
-	if (!note) {
-		return res.status(404).json({ message: 'Note not found.' });
-	}
+	try {
+		const note = await updateNoteFolder(req.params.id, folderId || null);
+		if (!note) {
+			return res.status(404).json({ message: 'Note not found.' });
+		}
 
-	res.json({ note });
+		res.json({ note });
+	} catch (error) {
+		console.error('Error updating note folder:', error);
+		res.status(500).json({ message: 'Failed to update note folder.' });
+	}
 });
 
-router.delete('/:id', (req, res) => {
-	const success = deleteNote(req.params.id);
-	if (!success) {
-		return res.status(404).json({ message: 'Note not found.' });
-	}
+router.delete('/:id', async (req, res) => {
+	try {
+		const success = await deleteNote(req.params.id);
+		if (!success) {
+			return res.status(404).json({ message: 'Note not found.' });
+		}
 
-	res.json({ message: 'Note deleted successfully.' });
+		res.json({ message: 'Note deleted successfully.' });
+	} catch (error) {
+		console.error('Error deleting note:', error);
+		res.status(500).json({ message: 'Failed to delete note.' });
+	}
 });
 
 module.exports = router;
