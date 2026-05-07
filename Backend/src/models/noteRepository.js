@@ -1,5 +1,6 @@
 const Note = require('./Note');
 const Folder = require('./Folder');
+const { isValidObjectId } = require('mongoose');
 
 function serializeNote(noteDoc) {
 	if (!noteDoc) {
@@ -22,6 +23,10 @@ async function listNotes() {
 }
 
 async function getNoteById(noteId) {
+	if (!isValidObjectId(noteId)) {
+		return null;
+	}
+
 	const note = await Note.findById(noteId).populate('folderId', 'name');
 	return serializeNote(note);
 }
@@ -38,21 +43,33 @@ async function createNote({ title, content, folderId = null, summary = null }) {
 }
 
 async function updateNoteFolder(noteId, folderId) {
+	if (!isValidObjectId(noteId)) {
+		return null;
+	}
+
 	const note = await Note.findByIdAndUpdate(
 		noteId,
 		{ folderId: folderId || null, updatedAt: new Date() },
-		{ new: true, runValidators: true }
+		{ returnDocument: 'after', runValidators: true }
 	).populate('folderId', 'name');
 
 	return serializeNote(note);
 }
 
 async function deleteNote(noteId) {
+	if (!isValidObjectId(noteId)) {
+		return false;
+	}
+
 	const result = await Note.findByIdAndDelete(noteId);
 	return Boolean(result);
 }
 
 async function noteExists(noteId) {
+	if (!isValidObjectId(noteId)) {
+		return false;
+	}
+
 	const count = await Note.countDocuments({ _id: noteId });
 	return count > 0;
 }
