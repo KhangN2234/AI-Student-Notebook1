@@ -1,6 +1,6 @@
 const Folder = require('./Folder');
 const Note = require('./Note');
-const { isValidObjectId } = require('mongoose');
+const { Types, isValidObjectId } = require('mongoose');
 
 function serializeFolder(folderDoc, noteCount = 0) {
 	if (!folderDoc) {
@@ -15,11 +15,12 @@ function serializeFolder(folderDoc, noteCount = 0) {
 	};
 }
 
-async function listFolders() {
-	const folders = await Folder.find().sort({ createdAt: 1 });
+async function listFolders(userId) {
+	const ownerId = new Types.ObjectId(userId);
+	const folders = await Folder.find({ userId }).sort({ createdAt: 1 });
 
 	const noteCounts = await Note.aggregate([
-		{ $match: { folderId: { $ne: null } } },
+		{ $match: { userId: ownerId, folderId: { $ne: null } } },
 		{ $group: { _id: '$folderId', noteCount: { $sum: 1 } } },
 	]);
 
@@ -28,32 +29,32 @@ async function listFolders() {
 	return folders.map((folder) => serializeFolder(folder, noteCountMap.get(String(folder.id)) || 0));
 }
 
-async function getFolderById(folderId) {
+async function getFolderById(folderId, userId) {
 	if (!isValidObjectId(folderId)) {
 		return null;
 	}
 
-	const folder = await Folder.findById(folderId);
+	const folder = await Folder.findOne({ _id: folderId, userId });
 	if (!folder) {
 		return null;
 	}
 
-	const noteCount = await Note.countDocuments({ folderId: folder.id });
+	const noteCount = await Note.countDocuments({ userId, folderId: folder.id });
 	return serializeFolder(folder, noteCount);
 }
 
-async function createFolder(name) {
-	const folder = await Folder.create({ name });
+async function createFolder(name, userId) {
+	const folder = await Folder.create({ userId, name });
 	return serializeFolder(folder, 0);
 }
 
-async function renameFolder(folderId, newName) {
+async function renameFolder(folderId, newName, userId) {
 	if (!isValidObjectId(folderId)) {
 		return null;
 	}
 
-	const folder = await Folder.findByIdAndUpdate(
-		folderId,
+	const folder = await Folder.findOneAndUpdate(
+		{ _id: folderId, userId },
 		{ name: newName, updatedAt: new Date() },
 		{ returnDocument: 'after', runValidators: true }
 	);
@@ -62,29 +63,29 @@ async function renameFolder(folderId, newName) {
 		return null;
 	}
 
-	const noteCount = await Note.countDocuments({ folderId: folder.id });
+	const noteCount = await Note.countDocuments({ userId, folderId: folder.id });
 	return serializeFolder(folder, noteCount);
 }
 
-async function deleteFolder(folderId) {
+async function deleteFolder(folderId, userId) {
 	if (!isValidObjectId(folderId)) {
 		return false;
 	}
 
-	const folder = await Folder.findByIdAndDelete(folderId);
+	const folder = await Folder.findOneAndDelete({ _id: folderId, userId });
 	if (!folder) {
 		return false;
 	}
 
 	await Note.updateMany(
-		{ folderId: folder.id },
+		{ userId, folderId: folder.id },
 		{ $set: { folderId: null, updatedAt: new Date() } }
 	);
 
 	return true;
 }
 
-async function folderExists(folderId) {
+async function folderExists(folderId, userId) {
 	if (!folderId) {
 		return true;
 	}
@@ -93,7 +94,7 @@ async function folderExists(folderId) {
 		return false;
 	}
 
-	const count = await Folder.countDocuments({ _id: folderId });
+	const count = await Folder.countDocuments({ _id: folderId, userId });
 	return count > 0;
 }
 

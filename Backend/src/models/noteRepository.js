@@ -17,38 +17,39 @@ function serializeNote(noteDoc) {
 	};
 }
 
-async function listNotes() {
-	const notes = await Note.find().populate('folderId', 'name').sort({ createdAt: -1 });
+async function listNotes(userId) {
+	const notes = await Note.find({ userId }).populate('folderId', 'name').sort({ createdAt: -1 });
 	return notes.map(serializeNote);
 }
 
-async function getNoteById(noteId) {
+async function getNoteById(noteId, userId) {
 	if (!isValidObjectId(noteId)) {
 		return null;
 	}
 
-	const note = await Note.findById(noteId).populate('folderId', 'name');
+	const note = await Note.findOne({ _id: noteId, userId }).populate('folderId', 'name');
 	return serializeNote(note);
 }
 
-async function createNote({ title, content, folderId = null, summary = null }) {
+async function createNote({ userId, title, content, folderId = null, summary = null }) {
 	const note = await Note.create({
+		userId,
 		title,
 		content,
 		folderId: folderId || null,
 		summary: summary || null,
 	});
 
-	return getNoteById(note.id);
+	return getNoteById(note.id, userId);
 }
 
-async function updateNoteFolder(noteId, folderId) {
+async function updateNoteFolder(noteId, folderId, userId) {
 	if (!isValidObjectId(noteId)) {
 		return null;
 	}
 
-	const note = await Note.findByIdAndUpdate(
-		noteId,
+	const note = await Note.findOneAndUpdate(
+		{ _id: noteId, userId },
 		{ folderId: folderId || null, updatedAt: new Date() },
 		{ returnDocument: 'after', runValidators: true }
 	).populate('folderId', 'name');
@@ -56,12 +57,12 @@ async function updateNoteFolder(noteId, folderId) {
 	return serializeNote(note);
 }
 
-async function deleteNote(noteId) {
+async function deleteNote(noteId, userId) {
 	if (!isValidObjectId(noteId)) {
 		return false;
 	}
 
-	const result = await Note.findByIdAndDelete(noteId);
+	const result = await Note.findOneAndDelete({ _id: noteId, userId });
 	return Boolean(result);
 }
 

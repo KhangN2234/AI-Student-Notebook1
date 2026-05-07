@@ -8,6 +8,7 @@ const notesRoutes = require('./routes/notes');
 const foldersRoutes = require('./routes/folders');
 const questionsRoutes = require('./routes/questions');
 const scheduleRoutes = require('./routes/schedule');
+const requireAuth = require('./src/middleware/requireAuth');
 
 const app = express();
 
@@ -26,8 +27,8 @@ app.use(express.json({ limit: '1mb' }));
 
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/notes', notesRoutes);
-app.use('/api/folders', foldersRoutes);
+app.use('/api/notes', requireAuth, notesRoutes);
+app.use('/api/folders', requireAuth, foldersRoutes);
 app.use('/api/questions', questionsRoutes);
 app.use('/api/schedule', scheduleRoutes);
 

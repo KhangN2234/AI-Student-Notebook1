@@ -21,8 +21,17 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.message || 'Request failed');
+    let message = '';
+
+    try {
+      const errorBody = await response.json();
+      message = errorBody?.message || '';
+    } catch {
+      const errorText = await response.text().catch(() => '');
+      message = errorText || '';
+    }
+
+    throw new Error(message || `Request failed (${response.status})`);
   }
 
   return response.json();
@@ -34,6 +43,10 @@ export async function getNotes() {
 
 export async function login(payload) {
   return request('/auth/login', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function signup(payload) {
+  return request('/auth/signup', { method: 'POST', body: JSON.stringify(payload) });
 }
 
 export async function getCurrentUser() {

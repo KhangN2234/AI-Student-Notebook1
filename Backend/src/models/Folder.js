@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const folderSchema = new mongoose.Schema(
 	{
+		userId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'User',
+			required: true,
+		},
 		name: {
 			type: String,
 			required: true,
@@ -32,7 +37,7 @@ const folderSchema = new mongoose.Schema(
 	}
 );
 
-folderSchema.index({ createdAt: 1 });
-folderSchema.index({ name: 1 });
+folderSchema.index({ userId: 1, createdAt: 1 });
+folderSchema.index({ userId: 1, name: 1 });
 
 module.exports = mongoose.model('Folder', folderSchema);
