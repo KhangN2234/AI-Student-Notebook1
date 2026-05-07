@@ -2,6 +2,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import FoldersSidebar from './FoldersSidebar';
 import { createFolder } from '../services/api';
+import { clearStoredSession } from '../services/auth';
 
 const navItems1 = [
   { to: '/', label: 'Dashboard', end: true },
@@ -68,6 +69,11 @@ function AppLayout() {
     if (location.pathname !== '/') {
       navigate('/');
     }
+  }
+
+  function handleLogout() {
+    clearStoredSession();
+    navigate('/login', { replace: true });
   }
 
   return (
@@ -169,7 +175,7 @@ function AppLayout() {
                 </NavLink>
               ))}
             </nav>
-            <button>Logout</button>
+            <button onClick={handleLogout} type="button">Logout</button>
           </div>
         </aside>
       <main className="content-area">

@@ -1,10 +1,17 @@
+import { getAuthToken } from './auth';
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
 async function request(path, options = {}) {
+  const token = getAuthToken();
   let response;
   try {
     response = await fetch(`${API_BASE}${path}`, {
-      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers || {}),
+      },
       ...options,
     });
   } catch {
@@ -23,6 +30,14 @@ async function request(path, options = {}) {
 
 export async function getNotes() {
   return request('/notes');
+}
+
+export async function login(payload) {
+  return request('/auth/login', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function getCurrentUser() {
+  return request('/auth/me');
 }
 
 export async function getNoteById(id) {
