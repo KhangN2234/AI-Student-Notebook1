@@ -12,9 +12,9 @@ const { folderExists } = require('../src/models/folderRepository');
 
 const router = express.Router();
 
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
 	try {
-		const notes = await listNotes();
+		const notes = await listNotes(req.user.id);
 		res.json({ notes });
 	} catch (error) {
 		console.error('Error listing notes:', error);
@@ -86,12 +86,13 @@ router.post('/', async (req, res) => {
 		return res.status(400).json({ message: 'title is required.' });
 	}
 
-	if (folderId && !(await folderExists(folderId))) {
+	if (folderId && !(await folderExists(folderId, req.user.id))) {
 		return res.status(400).json({ message: 'Invalid folderId.' });
 	}
 
 	try {
 		const note = await createNote({
+			userId: req.user.id,
 			title: safeTitle,
 			content: safeContent,
 			folderId,
@@ -108,7 +109,7 @@ router.post('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
 	try {
-		const note = await getNoteById(req.params.id);
+		const note = await getNoteById(req.params.id, req.user.id);
 		if (!note) {
 			return res.status(404).json({ message: 'Note not found.' });
 		}
@@ -121,12 +122,12 @@ router.get('/:id', async (req, res) => {
 });
 router.patch('/:id/folder', async (req, res) => {
 	const { folderId } = req.body || {};
-	if (folderId && !(await folderExists(folderId))) {
+	if (folderId && !(await folderExists(folderId, req.user.id))) {
 		return res.status(400).json({ message: 'Invalid folderId.' });
 	}
 
 	try {
-		const note = await updateNoteFolder(req.params.id, folderId || null);
+		const note = await updateNoteFolder(req.params.id, folderId || null, req.user.id);
 		if (!note) {
 			return res.status(404).json({ message: 'Note not found.' });
 		}
@@ -140,7 +141,7 @@ router.patch('/:id/folder', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
 	try {
-		const success = await deleteNote(req.params.id);
+		const success = await deleteNote(req.params.id, req.user.id);
 		if (!success) {
 			return res.status(404).json({ message: 'Note not found.' });
 		}

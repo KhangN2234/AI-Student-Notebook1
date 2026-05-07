@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import NotesInputPage from './pages/NotesInputPage';
 import QuestionsPage from './pages/QuestionsPage';
+import SignupPage from './pages/SignupPage';
 import { isAuthenticated } from './services/auth';
 import './App.css';
 
@@ -21,6 +22,7 @@ function App() {
   return (
     <Routes>
       <Route element={<LoginPage />} path="/login" />
+      <Route element={<SignupPage />} path="/signup" />
 
       <Route
         element={(

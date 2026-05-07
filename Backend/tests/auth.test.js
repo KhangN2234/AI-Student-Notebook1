@@ -20,6 +20,46 @@ afterAll(async () => {
 	await teardownMongoTestDatabase();
 });
 
+describe('POST /api/auth/signup', () => {
+	test('creates an account and returns auth payload', async () => {
+		const res = await request(app)
+			.post('/api/auth/signup')
+			.send({ username: 'newstudent', email: 'newstudent@example.com', password: 'Password123!' });
+
+		expect(res.statusCode).toBe(201);
+		expect(res.body.token).toBeDefined();
+		expect(res.body.user).toMatchObject({
+			username: 'newstudent',
+			email: 'newstudent@example.com',
+		});
+
+		const user = await User.findOne({ email: 'newstudent@example.com' });
+		expect(user).toBeDefined();
+		expect(user.passwordHash).toBeDefined();
+		expect(user.passwordHash).not.toBe('Password123!');
+	});
+
+	test('rejects duplicate username or email', async () => {
+		const passwordHash = await bcrypt.hash('Password123!', 10);
+		await User.create({ username: 'dupeuser', email: 'dupe@example.com', passwordHash });
+
+		const res = await request(app)
+			.post('/api/auth/signup')
+			.send({ username: 'dupeuser', email: 'dupe2@example.com', password: 'Password123!' });
+
+		expect(res.statusCode).toBe(409);
+	});
+
+	test('returns 400 for invalid signup payload', async () => {
+		const res = await request(app)
+			.post('/api/auth/signup')
+			.send({ username: '', email: 'not-an-email', password: '123' });
+
+		expect(res.statusCode).toBe(400);
+		expect(res.body.message).toBeDefined();
+	});
+});
+
 describe('POST /api/auth/login', () => {
 	test('logs in with valid username and password', async () => {
 		const passwordHash = await bcrypt.hash('Password123!', 10);

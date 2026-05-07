@@ -8,9 +8,9 @@ const {
 
 const router = express.Router();
 
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const folders = await listFolders();
+    const folders = await listFolders(req.user.id);
     res.json({ folders });
   } catch (error) {
     console.error('Error listing folders:', error);
@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
   }
 
  	try {
-    const folder = await createFolder(name);
+    const folder = await createFolder(name, req.user.id);
     return res.status(201).json({ folder });
   } catch (error) {
     console.error('Error creating folder:', error);
@@ -46,7 +46,7 @@ router.patch('/:id', async (req, res) => {
   }
 
  	try {
-    const updatedFolder = await renameFolder(id, name);
+    const updatedFolder = await renameFolder(id, name, req.user.id);
     if (!updatedFolder) {
       return res.status(404).json({ message: 'Folder not found.' });
     }
@@ -66,7 +66,7 @@ router.delete('/:id', async (req, res) => {
   }
 
  	try {
-    const success = await deleteFolder(id);
+    const success = await deleteFolder(id, req.user.id);
     if (!success) {
       return res.status(404).json({ message: 'Folder not found.' });
     }
