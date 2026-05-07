@@ -2,6 +2,7 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const { connectMongoDB, disconnectMongoDB } = require('../src/config/db');
 const Note = require('../src/models/Note');
 const Folder = require('../src/models/Folder');
+const User = require('../src/models/User');
 
 let mongoServer;
 
@@ -17,6 +18,7 @@ async function setupMongoTestDatabase() {
 async function clearMongoTestDatabase() {
 	await Note.deleteMany({});
 	await Folder.deleteMany({});
+	await User.deleteMany({});
 }
 
 async function teardownMongoTestDatabase() {

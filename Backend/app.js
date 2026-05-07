@@ -3,6 +3,7 @@ require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
 const healthRoutes = require('./routes/health');
+const authRoutes = require('./routes/auth');
 const notesRoutes = require('./routes/notes');
 const foldersRoutes = require('./routes/folders');
 const questionsRoutes = require('./routes/questions');
@@ -23,6 +24,7 @@ app.use(
 app.use(express.json({ limit: '1mb' }));
 
 app.use('/api/health', healthRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/notes', notesRoutes);
 app.use('/api/folders', foldersRoutes);
 app.use('/api/questions', questionsRoutes);
