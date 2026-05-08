@@ -76,20 +76,42 @@ function QuestionsPage() {
   }
 
   async function handleSubmit() {
+    let correctCount = 0;
+    let partialCount = 0;
+    let incorrectCount = 0;
+
     const resultsArray = questions.map((q, index) => {
       const userAnswer = answers[index]?.trim();
+      const status = gradeAnswer(userAnswer, q.answer);
+
+      if (status === 'correct') correctCount++;
+      else if (status === 'partial') partialCount++;
+      else incorrectCount++;
 
       return {
         question: q.question,
         correctAnswer: q.answer,
         explanation: q.explanation,
         userAnswer: userAnswer || '',
-        status: gradeAnswer(userAnswer, q.answer),
+        status,
       };
     });
 
     console.log(resultsArray);
     setResults(resultsArray);
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    const existingStats = JSON.parse(localStorage.getItem('reviewStats')) || [];
+
+    existingStats.push({
+      date: todayKey,
+      correct: correctCount,
+      partial: partialCount,
+      incorrect: incorrectCount,
+    });
+
+    localStorage.setItem('reviewStats', JSON.stringify(existingStats));
     try {
       const data = await generateSchedule(resultsArray);
       localStorage.setItem('reviewSchedule', JSON.stringify(data.schedule));
