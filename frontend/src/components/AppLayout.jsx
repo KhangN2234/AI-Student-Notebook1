@@ -5,7 +5,8 @@ import { createFolder } from '../services/api';
 
 const navItems1 = [
   { to: '/', label: 'Dashboard', end: true },
-  {to: '/calendar', label: 'Calendar' },
+  { to: '/calendar', label: 'Calendar' },
+  { to: '/progress', label: 'Progress' },
 ];
 
 const navItems2 = [
