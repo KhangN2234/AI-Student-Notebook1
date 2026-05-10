@@ -99,10 +99,19 @@ function QuestionsPage() {
 
     console.log(resultsArray);
     setResults(resultsArray);
+
+    console.log('Counts:', { correctCount, partialCount, incorrectCount });
+
+
     const today = new Date();
     const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-    const existingStats = JSON.parse(localStorage.getItem('reviewStats')) || [];
+    let existingStats = [];
+    try {
+      existingStats = JSON.parse(localStorage.getItem('reviewStats')) || [];
+    } catch {
+      existingStats = [];
+    }
 
     existingStats.push({
       date: todayKey,
@@ -112,6 +121,9 @@ function QuestionsPage() {
     });
 
     localStorage.setItem('reviewStats', JSON.stringify(existingStats));
+    console.log('Saved reviewStats:', existingStats);
+
+
     try {
       const data = await generateSchedule(resultsArray);
       localStorage.setItem('reviewSchedule', JSON.stringify(data.schedule));
@@ -208,9 +220,11 @@ function QuestionsPage() {
             ))}
           </ol>
 
-          <button className="button" onClick={handleSubmit}>
-            Submit Answers
-          </button>
+          {results.length === 0 && (
+            <button className="button" onClick={handleSubmit}>
+              Submit Answers
+            </button>
+          )}
         </>
       )}
     </section>
