@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage';
 import NotesInputPage from './pages/NotesInputPage';
 import QuestionsPage from './pages/QuestionsPage';
 import CalendarPage from './pages/CalendarPage';
+import ProgressTrackingPage from './pages/ProgressTrackingPage';
 import './App.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Route element={<NotesInputPage />} path="notes/new" />
         <Route element={<QuestionsPage />} path="notes/:id/questions" />
         <Route element={<CalendarPage />} path="calendar" />
+        <Route element={<ProgressTrackingPage />} path="progress" />
       </Route>
       <Route element={<Navigate replace to="/" />} path="*" />
     </Routes>

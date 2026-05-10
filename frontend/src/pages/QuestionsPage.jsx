@@ -76,20 +76,54 @@ function QuestionsPage() {
   }
 
   async function handleSubmit() {
+    let correctCount = 0;
+    let partialCount = 0;
+    let incorrectCount = 0;
+
     const resultsArray = questions.map((q, index) => {
       const userAnswer = answers[index]?.trim();
+      const status = gradeAnswer(userAnswer, q.answer);
+
+      if (status === 'correct') correctCount++;
+      else if (status === 'partial') partialCount++;
+      else incorrectCount++;
 
       return {
         question: q.question,
         correctAnswer: q.answer,
         explanation: q.explanation,
         userAnswer: userAnswer || '',
-        status: gradeAnswer(userAnswer, q.answer),
+        status,
       };
     });
 
     console.log(resultsArray);
     setResults(resultsArray);
+
+    console.log('Counts:', { correctCount, partialCount, incorrectCount });
+
+
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    let existingStats = [];
+    try {
+      existingStats = JSON.parse(localStorage.getItem('reviewStats')) || [];
+    } catch {
+      existingStats = [];
+    }
+
+    existingStats.push({
+      date: todayKey,
+      correct: correctCount,
+      partial: partialCount,
+      incorrect: incorrectCount,
+    });
+
+    localStorage.setItem('reviewStats', JSON.stringify(existingStats));
+    console.log('Saved reviewStats:', existingStats);
+
+
     try {
       const data = await generateSchedule(resultsArray);
       localStorage.setItem('reviewSchedule', JSON.stringify(data.schedule));
@@ -186,9 +220,11 @@ function QuestionsPage() {
             ))}
           </ol>
 
-          <button className="button" onClick={handleSubmit}>
-            Submit Answers
-          </button>
+          {results.length === 0 && (
+            <button className="button" onClick={handleSubmit}>
+              Submit Answers
+            </button>
+          )}
         </>
       )}
     </section>

@@ -26,13 +26,16 @@ p {
 .app-shell {
   min-height: 100vh;
   display: flex;
-  grid-template-rows: auto 1fr;
 }
 
 /* Content area sits beside sidebar */
 .content-area {
   flex: 1;
   padding: 1.5rem;
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 p {
@@ -42,7 +45,6 @@ p {
 /*------------------------------------------------------*/
 /* NAV BAR */
 
-/*Change the "AI student notebook" text */
 .eyebrow {
   margin: 0;
   font-size: 0.8rem;
@@ -58,46 +60,55 @@ p {
   flex-direction: column;
   gap: 2rem;
   background: linear-gradient(180deg, #fdf2d6, #f8fafc 40%, #fefefe);
-
   position: sticky;
-  top: 0;            
-  height: 100vh; 
-} .sidebar h1 {
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar h1 {
   margin: 0.3rem 0 0;
   font-size: 1.5rem;
-} .sidebar-top {
+}
+
+.sidebar-top {
   padding: 1.5rem 1rem 1rem;
   border-bottom: 1px solid var(--border);
-} .sidebar-middle {
-  flex: 1;                
-  overflow-y: auto;   /* ONLY this part scrolls */
+}
+
+.sidebar-middle {
+  flex: 1;
+  overflow-y: auto;
   padding: 0 1rem;
-} .sidebar-bottom {
+}
+
+.sidebar-bottom {
   padding: 1rem;
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}   .sidebar-bottom button {
-      background-color: black;
-      color: white;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.6rem 0.75rem;
-      font-size: 0.9rem;
-      transition: 0.2s;
-      cursor: pointer;
-    } .sidebar-bottom button:hover {
-      background-color: #13354e;
-    }
+}
 
-/*Spacing between nav-links */
+.sidebar-bottom button {
+  background-color: black;
+  color: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.sidebar-bottom button:hover {
+  background-color: #13354e;
+}
+
 .sidenav {
   display: flex;
   flex-direction: column;
 }
 
-/*Change the nav buttons like dashboard etc */
 .nav-link {
   display: block;
   text-decoration: none;
@@ -107,7 +118,9 @@ p {
   font-size: 0.9rem;
   background: white;
   transition: 0.3s;
-} .nav-link:hover {
+}
+
+.nav-link:hover {
   border-color: #cfa707;
   color: #826800;
   background: #f2f7c5;
@@ -118,7 +131,6 @@ p {
   background: #f2f7c5;
 }
 
-/* New Note and New Folder button group */
 .sidebar-create-group {
   display: grid;
   gap: 0.5rem;
@@ -140,7 +152,6 @@ p {
   min-width: 0;
 }
 
-/* Check mark and undo button when clicking new folder */
 .sidebar-new-folder-action {
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -155,14 +166,7 @@ p {
 }
 
 /*-----------------------------------------------------*/
-/*DASHBOARD PAPGE*/
-.content-area {
-  padding: 1.5rem;
-  max-width: 1000px;
-  width: 100%;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
+/* DASHBOARD */
 
 .lead {
   margin-top: 0;
@@ -174,22 +178,29 @@ p {
   border-radius: 0.75rem;
   padding: 1rem;
   background: white;
-  width: 20em;
-} .card p {
+
+  /* FIXED */
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card p {
   margin-bottom: 10px;
 }
 
-.grid-3,
+.grid-3 {
+  display: grid;
+  gap: 1rem;
+
+  /* FIXED: consistent 3-card layout */
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .grid-2 {
   display: grid;
   gap: 1rem;
-}
-
-.grid-3 {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.grid-2 {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
@@ -241,7 +252,9 @@ a:focus-visible {
   text-decoration: none;
   cursor: pointer;
   transition: 0.3s;
-} .button:hover {
+}
+
+.button:hover {
   border-color: #cfa707;
   color: #826800;
   background: #f2f7c5;
@@ -250,10 +263,6 @@ a:focus-visible {
 .button.secondary {
   background: white;
   color: #134e4a;
-} .button:hover {
-  border-color: #cfa707;
-  color: #826800;
-  background: #f2f7c5;
 }
 
 .button-row {
@@ -261,13 +270,6 @@ a:focus-visible {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
-}
-
-.filter-row {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
 }
 
 .error-text {
@@ -280,390 +282,8 @@ a:focus-visible {
   font-size: 0.92rem;
 }
 
-.note-detail {
-  white-space: pre-wrap;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  padding: 1rem;
-}
-
-.question-list,
-.folder-list {
-  padding-left: 1.2rem;
-}
-
-.output {
-  margin-top: 1rem;
-}
-
-.note-page {
-  display: grid;
-  gap: 1rem;
-}
-
-.note-page-header {
-  display: grid;
-  gap: 0.45rem;
-}
-
-.note-form-card {
-  border: 1px solid #cfd9e5;
-  border-radius: 1rem;
-  padding: 1.2rem;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  box-shadow: 0 12px 30px -24px rgba(15, 23, 42, 0.55);
-}
-
-.note-form-card textarea {
-  min-height: 16rem;
-  font-size: 0.98rem;
-  line-height: 1.45;
-  border-color: #93c5fd;
-  background: #fbfdff;
-}
-
-.upload-placeholder {
-  margin-top: 0.25rem;
-}
-
-.upload-placeholder input[disabled] {
-  cursor: not-allowed;
-  opacity: 0.7;
-  background: #f1f5f9;
-}
-
-.field-error {
-  margin-top: -0.55rem;
-}
-
-.status-text {
-  color: #0f766e;
-  font-weight: 600;
-}
-
-.note-detail-pane {
-  display: grid;
-  gap: 1rem;
-}
-
-.note-detail-body {
-  white-space: pre-wrap;
-  border: 1px solid #d8e1ec;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  background: #ffffff;
-  min-height: 10rem;
-  line-height: 1.5;
-}
-
-@media (max-width: 700px) {
-  .note-form-card {
-    padding: 1rem;
-  }
-
-  .note-form-card textarea {
-    min-height: 13rem;
-  }
-}
-
-.folders-sidebar {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  gap: 1rem;
-  padding: 1rem 0.5rem;
-  overflow: hidden;
-}
-
-.folders-sidebar.loading {
-  justify-content: center;
-  align-items: center;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.sidebar-error {
-  padding: 0.75rem;
-  margin: 0 0.5rem;
-  background-color: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  border-radius: 4px;
-  color: #fd2a2a;
-  font-size: 0.9em;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.folders-list {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  min-width: 0;
-}
-
-.new-folder-section {
-  padding: 0.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.new-folder-button {
-  width: 100%;
-  padding: 0.6rem 0.75rem;
-  background-color: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  color: inherit;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
-  transition: all 0.15s ease-in-out;
-}
-
-.new-folder-button:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.new-folder-button:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: -2px;
-}
-
-.new-folder-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.new-folder-input-group {
-  display: flex;
-  gap: 0.5rem;
-  align-items: stretch;
-}
-
-.new-folder-input {
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  color: inherit;
-  font-family: inherit;
-  font-size: inherit;
-}
-
-.new-folder-input:focus {
-  outline: none;
-  background-color: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.new-folder-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.confirm-button,
-.cancel-button {
-  padding: 0.5rem 0.75rem;
-  background-color: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  color: inherit;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
-  transition: all 0.15s ease-in-out;
-  min-width: 2.5rem;
-}
-
-.confirm-button:hover:not(:disabled),
-.cancel-button:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.confirm-button:focus-visible,
-.cancel-button:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: -2px;
-}
-
-.confirm-button:disabled,
-.cancel-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.folder-item {
-  margin: 0;
-  padding: 0;
-}
-
-.folder-header-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.5rem;
-  position: relative;
-}
-
-.folder-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  cursor: pointer;
-  user-select: none;
-  border-radius: 4px;
-  flex: 1;
-  min-width: 0;
-  position: relative;
-}
-
-.folder-header:hover {
-  background-color: rgb(240, 239, 239);
-}
-
-.folder-header.drop-target {
-  background-color: #e5f3ff;
-  outline: 1px solid #60a5fa;
-}
-
-.folder-header:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: -2px;
-}
-
-.folder-icon {
-  display: inline-flex;
-  width: 1rem;
-  height: 1rem;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  transition: transform 0.15s ease-in-out;
-  flex-shrink: 0;
-}
-
-.folder-icon.expanded {
-  transform: rotate(90deg);
-}
-
-.folder-name {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.folder-rename-input {
-  flex: 1;
-  padding: 0.25rem 0.5rem;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(231, 234, 238, 0.5);
-  border-radius: 3px;
-  color: inherit;
-  font-family: inherit;
-  font-size: inherit;
-  min-width: 0;
-}
-
-.folder-rename-input:focus {
-  outline: none;
-  background-color: rgba(255, 255, 255, 0.15);
-  border-color: rgba(59, 130, 246, 0.8);
-}
-
-/* Rename, delete menu */
-.folder-context-menu {
-  position: fixed;
-  background-color: white;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-  box-shadow: 9px 9px 6px 0px rgba(0, 0, 0, 0.1);
-  z-index: 2000;
-  min-width: 110px;
-}
-
-/* Rename and delete button */
-.menu-item {
-  display: block;
-  width: 100%;
-  padding: 0.6rem 1rem;
-  text-align: left;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: 0.1s ease-in-out;
-}
-
-.menu-item:hover {
-  color: white;
-  background-color: grey;
-}
-
-.menu-item.delete-item:hover {
-  background-color: rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
-}
-
-.folder-notes-list {
-  list-style: none;
-  margin: 0;
-  padding: 0 0 0 1.5rem;
-}
-
-.note-item {
-  display: block;
-  width: 100%;
-  padding: 0.4rem 0.75rem;
-  margin: 0.1rem 0;
-  text-align: left;
-  background: none;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  color: inherit;
-  font-family: inherit;
-  font-size: inherit;
-  transition: background-color 0.1s ease-in-out;
-}
-
-.note-item:hover {
-  background-color: rgb(240, 239, 239);
-}
-
-.note-item:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: -2px;
-}
-
-.note-item.selected {
-  background-color: rgba(255, 255, 255, 0.3);
-  font-weight: 500;
-}
-
-.note-item.selected:hover {
-  background-color: rgb(240, 239, 239);
-}
-
-.note-title {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.no-notes {
-  list-style: none;
-  padding: 0.4rem 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.9em;
-  font-style: italic;
-}
-
-
 /*-----------------------------------------------------*/
-/*Active Recall (Question Page)*/
+/* QUESTIONS PAGE */
 
 .question-card {
   margin-bottom: 15px;
