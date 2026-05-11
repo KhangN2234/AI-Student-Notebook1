@@ -107,18 +107,29 @@ export async function generateQuestions(payload) {
   return request('/questions', { method: 'POST', body: JSON.stringify(payload) });
 }
 
-export async function generateSchedule(results) {
-  const response = await fetch('http://localhost:4000/api/schedule', {
+export async function generateSchedule(results, noteId) {
+  return request('/schedule', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ results }),
+    body: JSON.stringify({ results, noteId }),
   });
+}
 
-  if (!response.ok) {
-    throw new Error('Failed to generate schedule');
-  }
+export async function getReviewSessions() {
+  return request('/reviews');
+}
 
-  return response.json();
+export async function saveReviewSession(payload) {
+  return request('/reviews', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function clearReviewSessions() {
+  return request('/reviews', { method: 'DELETE' });
+}
+
+export async function getSchedule() {
+  return request('/schedule');
+}
+
+export async function clearSchedule() {
+  return request('/schedule', { method: 'DELETE' });
 }

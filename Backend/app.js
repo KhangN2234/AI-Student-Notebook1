@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth');
 const notesRoutes = require('./routes/notes');
 const foldersRoutes = require('./routes/folders');
 const questionsRoutes = require('./routes/questions');
+const reviewsRoutes = require('./routes/reviews');
 const scheduleRoutes = require('./routes/schedule');
 const requireAuth = require('./src/middleware/requireAuth');
 
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/notes', requireAuth, notesRoutes);
 app.use('/api/folders', requireAuth, foldersRoutes);
 app.use('/api/questions', questionsRoutes);
+app.use('/api/reviews', reviewsRoutes);
 app.use('/api/schedule', scheduleRoutes);
 
 app.use((err, _req, res, _next) => {

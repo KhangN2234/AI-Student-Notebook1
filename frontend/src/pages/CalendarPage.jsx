@@ -1,14 +1,22 @@
 import { useEffect, useState } from 'react';
+import { getSchedule } from '../services/api';
 
 function CalendarPage() {
   const [schedule, setSchedule] = useState({});
   const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
-    const stored = localStorage.getItem('reviewSchedule');
-    if (stored) {
-      setSchedule(JSON.parse(stored));
+    async function loadSchedule() {
+      try {
+        const response = await getSchedule();
+        setSchedule(response.schedule || {});
+      } catch (error) {
+        console.error('Failed to load schedule:', error);
+        setSchedule({});
+      }
     }
+
+    loadSchedule();
   }, []);
 
   const dates = Object.keys(schedule).sort();

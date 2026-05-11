@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { generateQuestions, getNoteById } from '../services/api';
-import { generateSchedule } from '../services/api';
+import {
+  generateQuestions,
+  generateSchedule,
+  getNoteById,
+  getReviewSessions,
+  saveReviewSession,
+} from '../services/api';
 
 function QuestionsPage() {
   const { id } = useParams();
@@ -103,35 +108,25 @@ function QuestionsPage() {
     console.log('Counts:', { correctCount, partialCount, incorrectCount });
 
 
-    const today = new Date();
-    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-    let existingStats = [];
     try {
-      existingStats = JSON.parse(localStorage.getItem('reviewStats')) || [];
-    } catch {
-      existingStats = [];
-    }
+      const today = new Date();
+      const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const reviewSessions = await getReviewSessions();
+      const existingSessions = reviewSessions.sessions || [];
+      const sessionNumber =
+        existingSessions.filter((stat) => stat.dateKey === todayKey).length + 1;
 
-    const sessionNumber =
-      existingStats.filter((stat) => stat.date === todayKey).length + 1;
+      await saveReviewSession({
+        noteId: id,
+        dateKey: todayKey,
+        sessionNumber,
+        sessionLabel: `Session ${sessionNumber}`,
+        correct: correctCount,
+        partial: partialCount,
+        incorrect: incorrectCount,
+      });
 
-    existingStats.push({
-      date: todayKey,
-      sessionNumber,
-      sessionLabel: `Session ${sessionNumber}`,
-      correct: correctCount,
-      partial: partialCount,
-      incorrect: incorrectCount,
-    });
-
-    localStorage.setItem('reviewStats', JSON.stringify(existingStats));
-    console.log('Saved reviewStats:', existingStats);
-
-
-    try {
-      const data = await generateSchedule(resultsArray);
-      localStorage.setItem('reviewSchedule', JSON.stringify(data.schedule));
+      await generateSchedule(resultsArray, id);
     } catch (err) {
       console.error('Failed to generate schedule:', err);
     }

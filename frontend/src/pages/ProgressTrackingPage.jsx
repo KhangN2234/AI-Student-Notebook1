@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { clearReviewSessions, clearSchedule, getReviewSessions } from '../services/api';
 
 function ProgressTooltip(props) {
   const { active, payload, label } = props;
@@ -45,12 +46,13 @@ function ProgressTooltip(props) {
 function ProgressTrackingPage() {
   const [data, setData] = useState([]);
 
-  const handleClearAllData = () => {
+  const handleClearAllData = async () => {
     const confirmed = window.confirm(
       'Are you sure you want to delete all session data? This cannot be undone.'
     );
     if (confirmed) {
-      localStorage.removeItem('reviewStats');
+      await clearReviewSessions();
+      await clearSchedule();
       setData([]);
     }
   };
@@ -63,48 +65,21 @@ function ProgressTrackingPage() {
         // const response = await getProgress();
         // setData(response.data);
 
-        let stored = [];
-        try {
-          stored = JSON.parse(localStorage.getItem('reviewStats')) || [];
-        } catch {
-          stored = [];
-        }
+        const response = await getReviewSessions();
+        const normalized = (response.sessions || []).map((session) => ({
+          ...session,
+          correct: Number(session.correct) || 0,
+          partial: Number(session.partial) || 0,
+          incorrect: Number(session.incorrect) || 0,
+        }));
 
-        // normalize + sort by date ascending
-        const normalized = stored.map((s) => {
-          // Parse date string safely: handle formats like "5/10/2024", "05/10/2024", or ISO
-          let dateObj;
-          if (s.date instanceof Date) {
-            dateObj = s.date;
-          } else if (typeof s.date === 'string') {
-            // Try ISO format first
-            if (s.date.includes('T')) {
-              dateObj = new Date(s.date);
-            } else {
-              // Handle MM/DD/YYYY or M/D/YYYY format
-              const parts = s.date.split('/');
-              if (parts.length === 3) {
-                const [month, day, year] = parts;
-                dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-              } else {
-                dateObj = new Date(s.date);
-              }
-            }
-          } else {
-            dateObj = new Date();
+        normalized.sort((a, b) => {
+          if (a.dateKey === b.dateKey) {
+            return (a.sessionNumber || 1) - (b.sessionNumber || 1);
           }
 
-          return {
-            date: dateObj.toISOString(), // Store as ISO for consistency
-            sessionNumber: Number(s.sessionNumber) || 1,
-            sessionLabel: s.sessionLabel || `Session ${Number(s.sessionNumber) || 1}`,
-            correct: Number(s.correct) || 0,
-            partial: Number(s.partial) || 0,
-            incorrect: Number(s.incorrect) || 0,
-          };
+          return a.dateKey.localeCompare(b.dateKey);
         });
-
-        normalized.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         setData(normalized);
       } catch (err) {
@@ -161,7 +136,7 @@ function ProgressTrackingPage() {
   const chartData = data.map((session) => ({
     ...session,
     shortDate: (() => {
-      const d = new Date(session.date);
+      const d = new Date(session.dateKey);
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
       const year = d.getFullYear();
