@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signup } from '../services/api';
@@ -83,7 +84,7 @@ function SignupPage() {
 				<p className="lead">Create your account to save and organize study notes.</p>
 			</header>
 
-			<form className="stack note-form-card auth-card" onSubmit={handleSubmit}>
+			<form className="stack note-form-card auth-card" onSubmit={handleSubmit} noValidate>
 				<label htmlFor="signup-username">
 					Username
 					<input
@@ -159,7 +160,7 @@ function SignupPage() {
 
 				<div className="button-row">
 					<button className="button" type="submit" disabled={loading}>
-						{loading ? 'Creating account...' : 'Sign Up'}
+						{loading ? 'Creating account...' : 'Create Account'}
 					</button>
 				</div>
 

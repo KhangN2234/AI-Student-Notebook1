@@ -1,3 +1,4 @@
+import React from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import FoldersSidebar from './FoldersSidebar';
