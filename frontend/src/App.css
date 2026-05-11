@@ -74,6 +74,21 @@ p {
   padding: 1.5rem 1rem 1rem;
   border-bottom: 1px solid var(--border);
 }
+.folder-plus-icon {
+  position: relative;
+  top: 5px;
+  margin-right: 5px;
+  height: 20px;
+  margin-top: 0px;
+}
+
+.note-plus-icon {
+  position: relative;
+  top: 4px;
+  margin-right: 5px;
+  height: 20px;
+  margin-top: 0px;
+}
 
 .sidebar-middle {
   flex: 1;
@@ -88,6 +103,15 @@ p {
   flex-direction: column;
   gap: 0.5rem;
 }
+
+.sidebar-bottom .nav-icon {
+  position: relative;
+  top: 5px;
+  margin-right: 10px;
+  height: 24px;
+  margin-top: 0px;
+}
+
 
 .sidebar-bottom button {
   background-color: black;
@@ -635,6 +659,10 @@ input[type='checkbox'] {
   list-style: none;
   margin: 0;
   padding: 0 0 0 1.5rem;
+}.folder-notes-list .note-icon{
+  margin-right: 6px;
+  position: relative;
+  top: 5px;
 }
 
 .note-item {

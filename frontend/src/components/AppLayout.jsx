@@ -5,9 +5,9 @@ import { createFolder } from '../services/api';
 import { clearStoredSession } from '../services/auth';
 
 const navItems1 = [
-  { to: '/', label: 'Dashboard', end: true },
-  { to: '/calendar', label: 'Calendar' },
-  { to: '/progress', label: 'Progress' },
+  { to: '/', label: 'Dashboard', end: true, icon: 'home-alt' },
+  { to: '/calendar', label: 'Calendar', icon: 'calendar' },
+  { to: '/progress', label: 'Progress', icon: 'bar-chart-alt-2' },
 ];
 
 const navItems2 = [
@@ -93,6 +93,7 @@ function AppLayout() {
                     isActive ? 'nav-link nav-link-active' : 'nav-link'
                   }
                 >
+                  <box-icon className="note-plus-icon" type='solid' name='file-plus'></box-icon>
                   {item.label}
                 </NavLink>
               ))}
@@ -104,7 +105,8 @@ function AppLayout() {
                   onClick={() => setShowNewFolderInput(true)}
                   disabled={isCreatingFolder}
                 >
-                  + New Folder
+                  <box-icon className="folder-plus-icon" type='solid' name='folder-plus'></box-icon>
+                  New Folder
                 </button>
               ) : (
                 <div className="sidebar-new-folder-input-group">
@@ -171,6 +173,7 @@ function AppLayout() {
                     isActive ? 'nav-link nav-link-active' : 'nav-link'
                   }
                 >
+                  <box-icon className="nav-icon" name={item.icon}></box-icon>
                   {item.label}
                 </NavLink>
               ))}

@@ -21,7 +21,7 @@ function CalendarPage() {
       <br />
 
       {/* Month Navigation */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom:'10px'}}>
         <button
           onClick={() =>
             setCurrentDate(
