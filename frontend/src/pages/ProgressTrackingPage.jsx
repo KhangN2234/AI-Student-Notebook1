@@ -105,11 +105,6 @@ function ProgressTrackingPage() {
     return { correct, partial, incorrect };
   }
 
-  function getLastSession() {
-    if (data.length === 0) return null;
-    return data[data.length - 1];
-  }
-
   function getImprovementMessage() {
     if (data.length < 2) return null;
 
@@ -128,7 +123,6 @@ function ProgressTrackingPage() {
   }
 
   const totals = calculateTotals();
-  const lastSession = getLastSession();
   const insight = getImprovementMessage();
   const totalAnswers = totals.correct + totals.partial + totals.incorrect;
   const accuracy = totalAnswers > 0 ? Math.round((totals.correct / totalAnswers) * 100) : 0;
