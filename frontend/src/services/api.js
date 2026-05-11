@@ -61,6 +61,10 @@ export async function createNote(payload) {
   return request('/notes', { method: 'POST', body: JSON.stringify(payload) });
 }
 
+export async function updateNote(noteId, payload) {
+  return request(`/notes/${noteId}`, { method: 'PATCH', body: JSON.stringify(payload) });
+}
+
 export async function getFolders() {
   return request('/folders');
 }

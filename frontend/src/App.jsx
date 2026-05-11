@@ -36,6 +36,7 @@ function App() {
       >
         <Route element={<DashboardPage />} index />
         <Route element={<NotesInputPage />} path="notes/new" />
+        <Route element={<NotesInputPage />} path="notes/:id/edit" />
         <Route element={<QuestionsPage />} path="notes/:id/questions" />
         <Route element={<CalendarPage />} path="calendar" />
         <Route element={<ProgressTrackingPage />} path="progress" />

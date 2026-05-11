@@ -100,7 +100,7 @@ function NoteDetailPage({ noteId, onDeleted, refreshKey = 0 }) {
         <Link className="button" to={`/notes/${note.id}/questions`}>
           Generate Questions
         </Link>
-        <button className="button secondary" type="button" onClick={() => navigate('/notes/new')}>
+        <button className="button secondary" type="button" onClick={() => navigate(`/notes/${note.id}/edit`)}>
           Edit / Reopen
         </button>
         <button

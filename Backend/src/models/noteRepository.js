@@ -43,6 +43,31 @@ async function createNote({ userId, title, content, folderId = null, summary = n
 	return getNoteById(note.id, userId);
 }
 
+async function updateNote(noteId, { userId, title, content, folderId = null, summary }) {
+	if (!isValidObjectId(noteId)) {
+		return null;
+	}
+
+	const updatePayload = {
+		title,
+		content,
+		folderId: folderId || null,
+		updatedAt: new Date(),
+	};
+
+	if (summary !== undefined) {
+		updatePayload.summary = summary;
+	}
+
+	const note = await Note.findOneAndUpdate(
+		{ _id: noteId, userId },
+		updatePayload,
+		{ returnDocument: 'after', runValidators: true }
+	).populate('folderId', 'name');
+
+	return serializeNote(note);
+}
+
 async function updateNoteFolder(noteId, folderId, userId) {
 	if (!isValidObjectId(noteId)) {
 		return null;
@@ -80,6 +105,7 @@ module.exports = {
 	listNotes,
 	getNoteById,
 	createNote,
+	updateNote,
 	updateNoteFolder,
 	deleteNote,
 	noteExists,

@@ -5,6 +5,7 @@ const {
   createNote,
   getNoteById,
   listNotes,
+	updateNote,
   updateNoteFolder,
   deleteNote,
 } = require('../src/models/noteRepository');
@@ -49,7 +50,12 @@ router.post('/', async (req, res) => {
 					messages: [
 						{
 							role: 'system',
-							content: 'Summarize notes into clear bullet points. Do not write anything extra like "Here is the note summarize", etc',
+							content:`
+								Summarize notes into clear bullet points and 
+								format it neatly so that it is easy to read. 
+								Do not write anything extra like 
+								"Here is the note summarize", etc
+							`,
 						},
 						{
 							role: 'user',
@@ -57,7 +63,7 @@ router.post('/', async (req, res) => {
 						},
 					],
 					temperature: 0.5,
-					max_tokens: 500,
+					max_tokens: 800,
 				},
 				{
 					headers: {
@@ -103,6 +109,43 @@ router.post('/', async (req, res) => {
 	} catch (error) {
 		console.error('Error creating note:', error);
 		res.status(500).json({ message: 'Failed to create note.' });
+	}
+});
+
+router.patch('/:id', async (req, res) => {
+	const { title, content, folderId, summary } = req.body || {};
+	const safeTitle = typeof title === 'string' ? title.trim() : '';
+	const safeContent = typeof content === 'string' ? content.trim() : '';
+
+	if (!safeTitle) {
+		return res.status(400).json({ message: 'title is required.' });
+	}
+
+	if (!safeContent) {
+		return res.status(400).json({ message: 'content is required.' });
+	}
+
+	if (folderId && !(await folderExists(folderId, req.user.id))) {
+		return res.status(400).json({ message: 'Invalid folderId.' });
+	}
+
+	try {
+		const note = await updateNote(req.params.id, {
+			userId: req.user.id,
+			title: safeTitle,
+			content: safeContent,
+			folderId,
+			summary: summary === undefined ? undefined : summary || null,
+		});
+
+		if (!note) {
+			return res.status(404).json({ message: 'Note not found.' });
+		}
+
+		res.json({ note });
+	} catch (error) {
+		console.error('Error updating note:', error);
+		res.status(500).json({ message: 'Failed to update note.' });
 	}
 });
 
