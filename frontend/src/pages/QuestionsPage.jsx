@@ -113,8 +113,13 @@ function QuestionsPage() {
       existingStats = [];
     }
 
+    const sessionNumber =
+      existingStats.filter((stat) => stat.date === todayKey).length + 1;
+
     existingStats.push({
       date: todayKey,
+      sessionNumber,
+      sessionLabel: `Session ${sessionNumber}`,
       correct: correctCount,
       partial: partialCount,
       incorrect: incorrectCount,

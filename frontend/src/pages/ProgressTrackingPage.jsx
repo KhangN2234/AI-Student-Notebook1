@@ -9,30 +9,51 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-function ProgressTooltip({ active, payload, label }) {
+function ProgressTooltip(props) {
+  const { active, payload, label } = props;
+
   if (!active || !payload || payload.length === 0) {
     return null;
   }
 
+  const correct = payload.find(p => p.dataKey === 'correct')?.value ?? 0;
+  const partial = payload.find(p => p.dataKey === 'partial')?.value ?? 0;
+  const incorrect = payload.find(p => p.dataKey === 'incorrect')?.value ?? 0;
+
   return (
     <div className="progress-tooltip">
       <p className="progress-tooltip-date">{label}</p>
-      {payload.map((entry) => (
-        <div key={entry.dataKey} className="progress-tooltip-row">
-          <span
-            className="progress-tooltip-dot"
-            style={{ backgroundColor: entry.color }}
-          />
-          <span className="progress-tooltip-label">{entry.name}</span>
-          <strong>{entry.value}</strong>
-        </div>
-      ))}
+      <div className="progress-tooltip-row">
+        <span className="progress-tooltip-dot" style={{ backgroundColor: '#16a34a' }} />
+        <span className="progress-tooltip-label">Correct</span>
+        <strong>{correct}</strong>
+      </div>
+      <div className="progress-tooltip-row">
+        <span className="progress-tooltip-dot" style={{ backgroundColor: '#f59e0b' }} />
+        <span className="progress-tooltip-label">Partial</span>
+        <strong>{partial}</strong>
+      </div>
+      <div className="progress-tooltip-row">
+        <span className="progress-tooltip-dot" style={{ backgroundColor: '#ef4444' }} />
+        <span className="progress-tooltip-label">Incorrect</span>
+        <strong>{incorrect}</strong>
+      </div>
     </div>
   );
 }
 
 function ProgressTrackingPage() {
   const [data, setData] = useState([]);
+
+  const handleClearAllData = () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to delete all session data? This cannot be undone.'
+    );
+    if (confirmed) {
+      localStorage.removeItem('reviewStats');
+      setData([]);
+    }
+  };
 
   useEffect(() => {
     async function loadProgressData() {
@@ -50,12 +71,38 @@ function ProgressTrackingPage() {
         }
 
         // normalize + sort by date ascending
-        const normalized = stored.map((s) => ({
-          date: s.date,
-          correct: Number(s.correct) || 0,
-          partial: Number(s.partial) || 0,
-          incorrect: Number(s.incorrect) || 0,
-        }));
+        const normalized = stored.map((s) => {
+          // Parse date string safely: handle formats like "5/10/2024", "05/10/2024", or ISO
+          let dateObj;
+          if (s.date instanceof Date) {
+            dateObj = s.date;
+          } else if (typeof s.date === 'string') {
+            // Try ISO format first
+            if (s.date.includes('T')) {
+              dateObj = new Date(s.date);
+            } else {
+              // Handle MM/DD/YYYY or M/D/YYYY format
+              const parts = s.date.split('/');
+              if (parts.length === 3) {
+                const [month, day, year] = parts;
+                dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+              } else {
+                dateObj = new Date(s.date);
+              }
+            }
+          } else {
+            dateObj = new Date();
+          }
+
+          return {
+            date: dateObj.toISOString(), // Store as ISO for consistency
+            sessionNumber: Number(s.sessionNumber) || 1,
+            sessionLabel: s.sessionLabel || `Session ${Number(s.sessionNumber) || 1}`,
+            correct: Number(s.correct) || 0,
+            partial: Number(s.partial) || 0,
+            incorrect: Number(s.incorrect) || 0,
+          };
+        });
 
         normalized.sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -115,7 +162,10 @@ function ProgressTrackingPage() {
     ...session,
     shortDate: (() => {
       const d = new Date(session.date);
-      return `${d.getMonth() + 1}/${d.getDate()}`;
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${month}/${day}/${year} - ${session.sessionLabel || `Session ${session.sessionNumber || 1}`}`;
     })(),
   }));
 
@@ -132,11 +182,18 @@ function ProgressTrackingPage() {
           </p>
         </div>
 
-        {sessionCount > 0 && (
-          <div className="progress-session-pill">
-            {sessionCount} session{sessionCount === 1 ? '' : 's'} logged
-          </div>
-        )}
+        <div className="progress-header-actions">
+          {sessionCount > 0 && (
+            <div className="progress-session-pill">
+              {sessionCount} session{sessionCount === 1 ? '' : 's'} logged
+            </div>
+          )}
+          {sessionCount > 0 && (
+            <button className="progress-clear-btn" onClick={handleClearAllData}>
+              Clear all
+            </button>
+          )}
+        </div>
       </div>
 
       {data.length === 0 && (
@@ -185,7 +242,7 @@ function ProgressTrackingPage() {
                   <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" />
                   <XAxis dataKey="shortDate" axisLine={false} tickLine={false} />
                   <YAxis axisLine={false} tickLine={false} />
-                  <Tooltip content={<ProgressTooltip />} />
+                  <Tooltip cursor={{ stroke: '#cbd5e1', strokeWidth: 1 }} content={<ProgressTooltip />} />
                   <Line
                     type="monotone"
                     dataKey="correct"
