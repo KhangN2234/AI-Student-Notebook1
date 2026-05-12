@@ -46,7 +46,7 @@ function QuestionsPage() {
 
     const matchRatio = matchCount / correctWords.length;
 
-    if (matchRatio > 0.7) return 'correct';
+    if (matchRatio > 0.5) return 'correct';
     if (matchRatio > 0.3) return 'partial';
 
     return 'incorrect';
