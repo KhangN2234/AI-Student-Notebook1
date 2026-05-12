@@ -1,8 +1,11 @@
+import React from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import NoteDetailPage from './NoteDetailPage';
 
 const quickActions = [
-  { to: '/notes/new', title: 'New Note', copy: 'Capture notes quickly with title and folder.' }
+  { to: '/notes/new', title: 'New Note', copy: 'Capture notes quickly with title and folder.' },
+  { to: '/calendar', title: 'Calendar', copy: 'View your scheduled review questions.' },
+  { to: '/progress', title: 'Progress', copy: 'Track your performance over time and review trends.' }
 ];
 
 function DashboardPage() {

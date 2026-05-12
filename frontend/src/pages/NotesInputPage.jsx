@@ -1,9 +1,12 @@
+import React from 'react';
 import { useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { createNote, getFolders } from '../services/api';
+import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { createNote, getFolders, getNoteById, updateNote } from '../services/api';
 
 function NotesInputPage() {
   const { onSelectNote, triggerFoldersRefresh } = useOutletContext();
+  const navigate = useNavigate();
+  const { id: noteId } = useParams();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -14,6 +17,8 @@ function NotesInputPage() {
   const [fieldErrors, setFieldErrors] = useState({ title: '', content: '' });
 
   const [summary, setSummary] = useState('');
+  const [loadingNote, setLoadingNote] = useState(Boolean(noteId));
+  const isEditing = Boolean(noteId);
 
   useEffect(() => {
     async function loadFolders() {
@@ -29,6 +34,38 @@ function NotesInputPage() {
 
     loadFolders();
   }, []);
+
+  useEffect(() => {
+    async function loadExistingNote() {
+      if (!noteId) {
+        setLoadingNote(false);
+        return;
+      }
+
+      try {
+        setLoadingNote(true);
+        const data = await getNoteById(noteId);
+        const note = data.note || null;
+
+        if (!note) {
+          setStatusMessage('Note not found.');
+          return;
+        }
+
+        setTitle(note.title || '');
+        setContent(note.content || '');
+        setFolderId(note.folderId || '');
+        setSummary(note.summary || '');
+        setStatusMessage('');
+      } catch (err) {
+        setStatusMessage(err.message || 'Unable to load note.');
+      } finally {
+        setLoadingNote(false);
+      }
+    }
+
+    loadExistingNote();
+  }, [noteId]);
 
   function validateForm() {
     const nextErrors = { title: '', content: '' };
@@ -63,25 +100,30 @@ function NotesInputPage() {
       setSaving(true);
       setStatusMessage('');
 
-      const data = await createNote({
+      const payload = {
         title: title.trim(),
         content: content.trim(),
         folderId: folderId || null,
         summary: summary || null,
-      });
+      };
+
+      const data = isEditing
+        ? await updateNote(noteId, payload)
+        : await createNote(payload);
 
       const createdNoteId = data?.note?.id;
 
       triggerFoldersRefresh();
 
       if (createdNoteId) {
-        setStatusMessage('Note saved successfully. Redirecting...');
+        setStatusMessage(isEditing ? 'Note updated successfully. Redirecting...' : 'Note saved successfully. Redirecting...');
         onSelectNote(createdNoteId);
+        navigate('/');
       } else {
-        setStatusMessage('Note saved successfully.');
+        setStatusMessage(isEditing ? 'Note updated successfully.' : 'Note saved successfully.');
       }
     } catch (err) {
-      setStatusMessage(err.message || 'Unable to save note.');
+      setStatusMessage(err.message || (isEditing ? 'Unable to update note.' : 'Unable to save note.'));
     } finally {
       setSaving(false);
     }
@@ -116,9 +158,13 @@ function NotesInputPage() {
   return (
     <section className="note-page">
       <header className="note-page-header">
-        <h2>Main Note-Taking</h2>
+        <h2>{isEditing ? 'Edit Note' : 'Main Note-Taking'}</h2>
         <p className="lead">Capture your notes quickly, organize by class, and save for summaries and active recall.</p>
       </header>
+
+      {loadingNote ? (
+        <p className="meta">Loading note...</p>
+      ) : null}
 
       <form className="stack note-form-card" onSubmit={handleSubmit}>
         <label htmlFor="note-title">
@@ -200,7 +246,7 @@ function NotesInputPage() {
 
         <div className="button-row">
           <button className="button" disabled={saving} type="submit">
-            {saving ? 'Saving...' : 'Save Note'}
+            {saving ? (isEditing ? 'Updating...' : 'Saving...') : isEditing ? 'Update Note' : 'Save Note'}
           </button>
           <button className="button secondary" disabled={saving} onClick={clearForm} type="button">
             Clear

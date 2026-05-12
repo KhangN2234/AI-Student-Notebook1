@@ -1,0 +1,334 @@
+%% Auto-generated Mermaid UML Class Diagram
+%% Generated: 2026-05-11T21:50:26.628Z
+%% Project: student-notebook-llm
+%% Description: Comprehensive system UML class diagram showing all domain models,
+%%              repositories, services, and frontend components with attributes,
+%%              methods, and relationships.
+%%
+%% This diagram represents the complete architecture of the student-notebook-llm system
+%% including data models, persistence layer, business logic, and frontend integration.
+
+classDiagram
+
+%% ========================================
+%% DOMAIN MODELS LAYER
+%% ========================================
+
+    class User {
+        -id: ObjectId
+        -email: String
+        -passwordHash: String
+        -createdAt: Date
+        -updatedAt: Date
+        -preferences: Object
+        
+        +validateEmail()* Boolean
+        +hashPassword(password: String)* String
+        +comparePassword(plaintext: String)* Boolean
+        +getProfile()* Object
+    }
+
+    class Note {
+        -id: ObjectId
+        -userId: ObjectId
+        -folderId: ObjectId
+        -title: String
+        -content: String
+        -summary: String
+        -createdAt: Date
+        -updatedAt: Date
+        -tags: Array~String~
+        
+        +generateSummary()* String
+        +updateContent(newContent: String)* void
+        +delete()* void
+        +getRelatedNotes()* Array~Note~
+    }
+
+    class Folder {
+        -id: ObjectId
+        -userId: ObjectId
+        -name: String
+        -color: String
+        -createdAt: Date
+        -updatedAt: Date
+        
+        +addNote(noteId: ObjectId)* void
+        +removeNote(noteId: ObjectId)* void
+        +getNotes()* Array~Note~
+        +rename(newName: String)* void
+        +delete()* void
+    }
+
+    class ReviewSession {
+        -id: ObjectId
+        -noteId: ObjectId
+        -userId: ObjectId
+        -reviewResults: Array~Object~
+        -nextReviewDate: Date
+        -reviewCount: Number
+        -difficulty: Number
+        -createdAt: Date
+        -updatedAt: Date
+        
+        +submitReview(result: Object)* void
+        +calculateNextReviewDate()* Date
+        +updateDifficulty(level: Number)* void
+        +getHistory()* Array~Object~
+    }
+
+    class ReviewSchedule {
+        -id: ObjectId
+        -userId: ObjectId
+        -noteIds: Array~ObjectId~
+        -frequency: String
+        -lastScheduledDate: Date
+        -nextScheduleDate: Date
+        -isActive: Boolean
+        
+        +scheduleReviews()* Array~ReviewSession~
+        +updateFrequency(frequency: String)* void
+        +addNoteToSchedule(noteId: ObjectId)* void
+        +removeNoteFromSchedule(noteId: ObjectId)* void
+    }
+
+%% ========================================
+%% REPOSITORY LAYER
+%% ========================================
+
+    class UserRepository {
+        -collection: MongoCollection
+        
+        +create(userData: Object)* User
+        +findById(id: ObjectId)* User
+        +findByEmail(email: String)* User
+        +update(id: ObjectId, data: Object)* User
+        +delete(id: ObjectId)* Boolean
+        +findAll(filter: Object)* Array~User~
+    }
+
+    class NoteRepository {
+        -collection: MongoCollection
+        
+        +create(noteData: Object)* Note
+        +findById(id: ObjectId)* Note
+        +findByUserId(userId: ObjectId)* Array~Note~
+        +findByFolderId(folderId: ObjectId)* Array~Note~
+        +update(id: ObjectId, data: Object)* Note
+        +delete(id: ObjectId)* Boolean
+        +search(query: String)* Array~Note~
+    }
+
+    class FolderRepository {
+        -collection: MongoCollection
+        
+        +create(folderData: Object)* Folder
+        +findById(id: ObjectId)* Folder
+        +findByUserId(userId: ObjectId)* Array~Folder~
+        +update(id: ObjectId, data: Object)* Folder
+        +delete(id: ObjectId)* Boolean
+    }
+
+    class ReviewSessionRepository {
+        -collection: MongoCollection
+        
+        +create(sessionData: Object)* ReviewSession
+        +findById(id: ObjectId)* ReviewSession
+        +findByNoteId(noteId: ObjectId)* ReviewSession
+        +findByUserId(userId: ObjectId)* Array~ReviewSession~
+        +update(id: ObjectId, data: Object)* ReviewSession
+        +delete(id: ObjectId)* Boolean
+        +findDueForReview(userId: ObjectId)* Array~ReviewSession~
+    }
+
+    class ReviewScheduleRepository {
+        -collection: MongoCollection
+        
+        +create(scheduleData: Object)* ReviewSchedule
+        +findById(id: ObjectId)* ReviewSchedule
+        +findByUserId(userId: ObjectId)* ReviewSchedule
+        +update(id: ObjectId, data: Object)* ReviewSchedule
+        +delete(id: ObjectId)* Boolean
+    }
+
+%% ========================================
+%% SERVICE LAYER
+%% ========================================
+
+    class ReviewSchedulerService {
+        -scheduleRepository: ReviewScheduleRepository
+        -reviewSessionRepository: ReviewSessionRepository
+        -noteRepository: NoteRepository
+        -interval: Number
+        
+        +startScheduler()* void
+        +stopScheduler()* void
+        +processSchedules()* void
+        +calculateReviewDates(noteIds: Array~ObjectId~)* Array~Date~
+        +notifyUserForReview(userId: ObjectId)* void
+    }
+
+%% ========================================
+%% FRONTEND LAYER
+%% ========================================
+
+    class APIService {
+        -baseURL: String
+        -token: String
+        
+        +authenticateUser(credentials: Object)* User
+        +createNote(data: Object)* Note
+        +updateNote(id: ObjectId, data: Object)* Note
+        +deleteNote(id: ObjectId)* Boolean
+        +createFolder(data: Object)* Folder
+        +getNotes(folderId: ObjectId)* Array~Note~
+        +getReviewSessions(userId: ObjectId)* Array~ReviewSession~
+    }
+
+    class AuthService {
+        +login(email: String, password: String)* String
+        +signup(email: String, password: String)* User
+        +logout()* void
+        +getCurrentUser()* User
+        +isAuthenticated()* Boolean
+        +refreshToken()* String
+    }
+
+    class AppLayout {
+        -children: ReactNode
+        
+        +render()* JSX
+    }
+
+    class FoldersSidebar {
+        -folders: Array~Folder~
+        -onSelectFolder(folderId: ObjectId)* void
+        
+        +render()* JSX
+    }
+
+    class FolderItem {
+        -folder: Folder
+        -onSelect(folderId: ObjectId)* void
+        
+        +render()* JSX
+    }
+
+    class NoteCard {
+        -note: Note
+        -onSelect(noteId: ObjectId)* void
+        
+        +render()* JSX
+    }
+
+    class DashboardPage {
+        -notes: Array~Note~
+        -folders: Array~Folder~
+        -loading: Boolean
+        
+        +useEffect()* void
+        +handleNoteSelect(noteId: ObjectId)* void
+        +render()* JSX
+    }
+
+    class NoteDetailPage {
+        -noteId: ObjectId
+        -note: Note
+        -loading: Boolean
+        
+        +useEffect()* void
+        +handleDelete()* void
+        +render()* JSX
+    }
+
+    class NotesInputPage {
+        -formData: Object
+        -loading: Boolean
+        
+        +handleInputChange(field: String, value: any)* void
+        +handleSubmit()* void
+        +render()* JSX
+    }
+
+    class QuestionsPage {
+        -noteId: ObjectId
+        -questions: Array~Object~
+        -loading: Boolean
+        
+        +useEffect()* void
+        +handleAnswerSubmit(answers: Array~Object~)* void
+        +render()* JSX
+    }
+
+    class CalendarPage {
+        -reviewSessions: Array~ReviewSession~
+        -calendar: Object
+        
+        +useEffect()* void
+        +handleDateSelect(date: Date)* void
+        +render()* JSX
+    }
+
+    class ProgressTrackingPage {
+        -userId: ObjectId
+        -progressData: Object
+        -statistics: Object
+        
+        +useEffect()* void
+        +calculateStatistics()* Object
+        +render()* JSX
+    }
+
+%% ========================================
+%% RELATIONSHIPS - DOMAIN MODELS
+%% ========================================
+
+    User "1" *-- "*" Note : owns
+    User "1" *-- "*" Folder : owns
+    User "1" *-- "1" ReviewSchedule : has
+    Folder "1" *-- "*" Note : contains
+    Note "1" *-- "*" ReviewSession : generates
+    ReviewSchedule "*" -- "*" ReviewSession : schedules
+
+%% ========================================
+%% RELATIONSHIPS - REPOSITORIES
+%% ========================================
+
+    UserRepository --> User : manages
+    NoteRepository --> Note : manages
+    FolderRepository --> Folder : manages
+    ReviewSessionRepository --> ReviewSession : manages
+    ReviewScheduleRepository --> ReviewSchedule : manages
+
+%% ========================================
+%% RELATIONSHIPS - SERVICES
+%% ========================================
+
+    ReviewSchedulerService --> ReviewScheduleRepository : uses
+    ReviewSchedulerService --> ReviewSessionRepository : uses
+    ReviewSchedulerService --> NoteRepository : uses
+
+%% ========================================
+%% RELATIONSHIPS - FRONTEND COMPONENTS
+%% ========================================
+
+    AppLayout --> DashboardPage : contains
+    AppLayout --> NoteDetailPage : contains
+    AppLayout --> NotesInputPage : contains
+    AppLayout --> QuestionsPage : contains
+    AppLayout --> CalendarPage : contains
+    AppLayout --> ProgressTrackingPage : contains
+    
+    DashboardPage --> FoldersSidebar : contains
+    DashboardPage --> NoteCard : contains
+    FoldersSidebar --> FolderItem : contains
+    
+    DashboardPage --> APIService : uses
+    NoteDetailPage --> APIService : uses
+    NotesInputPage --> APIService : uses
+    QuestionsPage --> APIService : uses
+    CalendarPage --> APIService : uses
+    ProgressTrackingPage --> APIService : uses
+    
+    APIService --|> AuthService : extends
+    FolderItem --> APIService : uses

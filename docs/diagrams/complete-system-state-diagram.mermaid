@@ -1,0 +1,258 @@
+%% Auto-generated Mermaid state diagram for student-notebook-llm
+%% Generated: 2026-05-11T21:50:26.628Z
+%% Diagram type: stateDiagram-v2
+%% Scope: Entire application lifecycle in one unified state machine
+
+stateDiagram-v2
+    [*] --> AppStarting
+
+    state AppStarting {
+        [*] --> LoadingSession
+        LoadingSession : entry / initializeApp()
+        LoadingSession : do / readStoredSession()
+        LoadingSession : exit / finishStartup()
+    }
+
+    LoadingSession --> Unauthenticated : noSessionFound / redirectToLogin()
+    LoadingSession --> Authenticated : sessionValid / loadUserProfile(), loadDashboardData()
+    LoadingSession --> Error : sessionCorrupt / clearSession(), showError()
+
+    state Unauthenticated {
+        [*] --> Idle
+        Idle : entry / showLandingPage()
+        Idle : do / waitForLoginOrSignup()
+        Idle : exit / preserveUiState()
+    }
+
+    Unauthenticated --> SigningUp : clickSignup()
+    Unauthenticated --> LoggingIn : clickLogin()
+
+    state SigningUp {
+        [*] --> SubmittingSignup
+        SubmittingSignup : entry / showSignupForm()
+        SubmittingSignup : do / validateSignupData()
+        SubmittingSignup : exit / hideSignupForm()
+    }
+
+    SigningUp --> Authenticated : signupSuccess / storeToken(), loadUserProfile(), loadDashboard()
+    SigningUp --> Error : signupFailure / showErrorMessage()
+    SigningUp --> Unauthenticated : cancelSignup() / returnToLanding()
+
+    state LoggingIn {
+        [*] --> SubmittingLogin
+        SubmittingLogin : entry / showLoginForm()
+        SubmittingLogin : do / validateCredentials()
+        SubmittingLogin : exit / hideLoginForm()
+    }
+
+    LoggingIn --> Authenticated : loginSuccess / storeToken(), loadUserProfile(), loadDashboard()
+    LoggingIn --> Error : loginFailure / showErrorMessage()
+    LoggingIn --> Unauthenticated : cancelLogin() / returnToLanding()
+
+    state Authenticated {
+        [*] --> Dashboard
+        Dashboard : entry / loadFolders(), loadNotes(), loadReviewSummary()
+        Dashboard : do / monitorUserNavigation()
+        Dashboard : exit / persistUiPreferences()
+    }
+
+    Authenticated --> LoggingOut : logout() / clearSession(), navigateHome()
+    Authenticated --> SessionExpired : sessionExpired() / clearToken(), redirectToLogin()
+
+    state Dashboard_Inner {
+        [*] --> BrowsingFolders
+        BrowsingFolders : entry / loadFolderTree()
+        BrowsingFolders : do / displayFolderList()
+        BrowsingFolders : exit / rememberSelectedFolder()
+    }
+
+    Dashboard_Inner --> ViewingNote : selectNote(noteId)
+    Dashboard_Inner --> CreatingNote : createNote()
+    Dashboard_Inner --> ReviewCalendar : openCalendar()
+    Dashboard_Inner --> ProgressTracking : openProgressPage()
+    Dashboard_Inner --> SyncingData : refreshData()
+
+    BrowsingFolders --> ViewingNote : selectNote(noteId)
+    BrowsingFolders --> CreatingNote : createNote()
+    BrowsingFolders --> Dashboard_Inner : clearSelection()
+
+    state ViewingNote {
+        [*] --> ShowingNote
+        ShowingNote : entry / loadNoteDetails()
+        ShowingNote : do / renderNoteContent()
+        ShowingNote : exit / clearNoteCache()
+    }
+
+    ViewingNote --> EditingNote : editNote()
+    ViewingNote --> DeletingNote : deleteNote()
+    ViewingNote --> GeneratingQuestions : generateQuestions()
+    ViewingNote --> Dashboard_Inner : backToDashboard()
+
+    state CreatingNote {
+        [*] --> EditingNote_Draft
+        EditingNote_Draft : entry / loadEditor()
+        EditingNote_Draft : do / captureNoteInput()
+        EditingNote_Draft : exit / prepareSave()
+    }
+
+    CreatingNote --> SavingChanges : saveNote() / persistNote()
+    CreatingNote --> Error : saveNote() / showValidationError()
+    CreatingNote --> Dashboard_Inner : cancelCreate() / discardDraft()
+
+    state EditingNote {
+        [*] --> EditingDraft
+        EditingDraft : entry / loadEditorWithNote()
+        EditingDraft : do / trackUnsavedChanges()
+        EditingDraft : exit / closeEditor()
+    }
+
+    EditingNote --> SavingChanges : saveNote() / updateNote()
+    EditingNote --> Error : saveNote() / showValidationError()
+    EditingNote --> ViewingNote : cancelEdit() / discardChanges()
+
+    state DeletingNote {
+        [*] --> ConfirmDelete
+        ConfirmDelete : entry / showDeleteConfirmation()
+        ConfirmDelete : do / waitForUserDecision()
+        ConfirmDelete : exit / closeConfirmation()
+    }
+
+    DeletingNote --> SyncingData : confirmDelete() / deleteNoteFromServer()
+    DeletingNote --> ViewingNote : cancelDelete() / keepNoteOpen()
+
+    state SavingChanges {
+        [*] --> Persisting
+        Persisting : entry / startSaveRequest()
+        Persisting : do / syncToServer()
+        Persisting : exit / stopSaveRequest()
+    }
+
+    SavingChanges --> ViewingNote : saveSuccess / refreshNote(), refreshList()
+    SavingChanges --> Dashboard_Inner : saveSuccess / refreshDashboard()
+    SavingChanges --> Error : saveFailure / showError(), keepEditing()
+
+    state SyncingData {
+        [*] --> Syncing
+        Syncing : entry / openSyncConnection()
+        Syncing : do / synchronizeChanges()
+        Syncing : exit / closeSyncConnection()
+    }
+
+    SyncingData --> Dashboard_Inner : syncSuccess / refreshDashboard()
+    SyncingData --> Error : syncFailure / showError()
+
+    state GeneratingQuestions {
+        [*] --> WaitingForQuestions
+        WaitingForQuestions : entry / callBackend(), waitForLLMResponse()
+        WaitingForQuestions : do / pollQuestionStatus()
+        WaitingForQuestions : exit / stopPolling()
+    }
+
+    GeneratingQuestions --> QuestionsReady : questionsReady / displayQuestions()
+    GeneratingQuestions --> Error : generationFailure / showGenerationError()
+
+    state QuestionsReady {
+        [*] --> AnsweringQuestions
+        AnsweringQuestions : entry / showQuestions()
+        AnsweringQuestions : do / captureAnswers()
+        AnsweringQuestions : exit / prepareReviewSummary()
+    }
+
+    QuestionsReady --> ReviewingAnswers : submitAnswers() / scoreAnswers(), updateProgress()
+    ReviewingAnswers --> ReviewSession : reviewComplete / saveResponses()
+
+    state ReviewCalendar {
+        [*] --> LoadingReviewSchedule
+        LoadingReviewSchedule : entry / loadReviewSchedule()
+        LoadingReviewSchedule : do / calculateDueReviews()
+        LoadingReviewSchedule : exit / showReviewCalendar()
+    }
+
+    ReviewCalendar --> ReviewDue : reviewDue(date) / highlightDueItems()
+    ReviewCalendar --> Dashboard_Inner : noDueReviews() / returnToDashboard()
+    ReviewDue --> ReviewSession : startReview(noteId) / openReviewSession()
+
+    state ReviewSession {
+        [*] --> LoadingReviewCard
+        LoadingReviewCard : entry / loadReviewData()
+        LoadingReviewCard : do / displayReviewPrompt()
+        LoadingReviewCard : exit / clearReviewBuffer()
+    }
+
+    ReviewSession --> SubmittingReview : submitReview(result) / calculateNextReviewDate()
+    ReviewSession --> ReviewCompleted : reviewComplete / storeReviewResult()
+    SubmittingReview --> ReviewCompleted : reviewSaved / updateStats()
+    SubmittingReview --> Error : saveFailure / showError()
+    ReviewCompleted --> ReschedulingReview : rescheduleNeeded / updateSchedule()
+    ReschedulingReview --> ReviewCalendar : scheduleUpdated / refreshCalendar()
+    ReviewCompleted --> ProgressTracking : reviewComplete / updateProgress()
+
+    state ProgressTracking {
+        [*] --> LoadingStatistics
+        LoadingStatistics : entry / fetchReviewHistory()
+        LoadingStatistics : do / calculateCompletionRate()
+        LoadingStatistics : exit / renderCharts()
+    }
+
+    ProgressTracking --> DisplayingStatistics : statsLoaded / showMetrics()
+    ProgressTracking --> RefreshingStatistics : refreshStats()
+    ProgressTracking --> Dashboard_Inner : backToDashboard()
+    RefreshingStatistics --> DisplayingStatistics : statsRefreshSuccess / updateCharts()
+    RefreshingStatistics --> Error : statsRefreshFailure / showError()
+
+    state DisplayingStatistics {
+        [*] --> ViewingMetrics
+        ViewingMetrics : entry / renderStatistics()
+        ViewingMetrics : do / watchProgressUpdates()
+        ViewingMetrics : exit / stopWatching()
+    }
+
+    state Error {
+        [*] --> DisplayingError
+        DisplayingError : entry / logError(), displayMessage()
+        DisplayingError : do / waitForRecoveryAction()
+        DisplayingError : exit / clearErrorBanner()
+    }
+
+    Error --> Retrying : retry() / resendRequest()
+    Error --> Recovering : recover() / restorePreviousState()
+    Error --> Dashboard_Inner : dismissError() / returnToDashboard()
+
+    state Retrying {
+        [*] --> RetryRequest
+        RetryRequest : entry / retryLastAction()
+        RetryRequest : do / resubmitRequest()
+        RetryRequest : exit / finalizeRetry()
+    }
+
+    Retrying --> Dashboard_Inner : retrySuccess / refreshDashboard()
+    Retrying --> Error : retryFailure / showError()
+
+    state Recovering {
+        [*] --> RestoreState
+        RestoreState : entry / restorePreviousState()
+        RestoreState : do / reloadAppData()
+        RestoreState : exit / resumeNormalFlow()
+    }
+
+    Recovering --> Dashboard_Inner : recoveryComplete / resumeDashboard()
+    Recovering --> Unauthenticated : recoveryRequiresLogin / redirectToLogin()
+
+    state LoggingOut {
+        [*] --> ClearingSession
+        ClearingSession : entry / clearSession()
+        ClearingSession : do / revokeToken()
+        ClearingSession : exit / finalizeLogout()
+    }
+
+    LoggingOut --> SignedOut : logoutComplete / showSignedOutScreen()
+
+    state SignedOut {
+        [*] --> IdleSignedOut
+        IdleSignedOut : entry / showWelcomeScreen()
+        IdleSignedOut : do / waitForNewLogin()
+        IdleSignedOut : exit / prepareForAuth()
+    }
+
+    SignedOut --> Unauthenticated : startAgain() / returnToLogin()
+    SignedOut --> [*]

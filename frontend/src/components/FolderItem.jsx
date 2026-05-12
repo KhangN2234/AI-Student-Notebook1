@@ -1,5 +1,7 @@
+import React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import 'boxicons'
 
 function FolderItem({
   folder,
@@ -395,7 +397,7 @@ function FolderItem({
                   }}
                   aria-current={selectedNoteId === note.id ? 'page' : undefined}
                 >
-                  <span className="note-title">{note.title}</span>
+                  <span className="note-title"><box-icon className="note-icon" name='file'></box-icon>{note.title}</span>
                 </button>
 
                 {showNoteMenu && noteMenuTargetId === note.id ? (

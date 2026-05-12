@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { deleteNote, getNoteById } from '../services/api';
@@ -100,7 +101,7 @@ function NoteDetailPage({ noteId, onDeleted, refreshKey = 0 }) {
         <Link className="button" to={`/notes/${note.id}/questions`}>
           Generate Questions
         </Link>
-        <button className="button secondary" type="button" onClick={() => navigate('/notes/new')}>
+        <button className="button secondary" type="button" onClick={() => navigate(`/notes/${note.id}/edit`)}>
           Edit / Reopen
         </button>
         <button

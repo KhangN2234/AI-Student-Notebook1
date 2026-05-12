@@ -48,14 +48,24 @@ Build the MVP in three phases: foundation (notes + folders + persistence), AI fe
 
 **Decisions**
 - Included scope: MVP user stories in README (notes input, folder organization, summary, questions, saved notes view).
-- Excluded from MVP: auth, OCR, calendar, chat, simplified explanations unless schedule permits.
+- Excluded from MVP: OCR, AI chat / conversational interface, file uploads (PDF/Word), simplified explanations unless schedule permits.
 - Prompt deliverable interpreted as development prompts for generating each webpage's code with Copilot/ChatGPT.
-- Suggested page set for MVP: Dashboard, Notes Input, Notes List, Note Detail, Folder Manager, Summary View, Questions View.
+- Suggested page set for MVP: Dashboard, Notes Input, Notes List, Note Detail, Folder Manager, Summary View, Questions View, Progress Tracking View.
+
 
 **Further Considerations**
 1. Data storage recommendation: choose MongoDB now to avoid migration churn before demo.
 2. API contract recommendation: finalize JSON response schemas before frontend build-out to reduce rework.
 3. Prompt usage recommendation: store development prompts in a docs/prompts folder so the team can reuse the same instructions consistently.
+
+## Added Feature (Post-MVP Enhancement)
+
+- Progress Tracking (frontend MVP)
+  - Session-based tracking from QuestionsPage submissions
+  - Stores session data in localStorage (`reviewStats`)
+  - Visualizes trends using a line chart (Recharts)
+  - Displays totals, last session summary, and simple improvement insights
+  - Designed for future backend integration (MongoDB per-user storage)
 
 ## Development Prompt Files (Per Web Page)
 

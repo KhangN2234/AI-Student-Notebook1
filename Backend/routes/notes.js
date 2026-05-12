@@ -1,20 +1,26 @@
 const express = require('express');
 const axios = require('axios');
 
-
 const {
-	createNote,
-	folderExists,
-	getNoteById,
-	listNotes,
-	updateNoteFolder,
-	deleteNote,
-} = require('../src/data/store');
+  createNote,
+  getNoteById,
+  listNotes,
+	updateNote,
+  updateNoteFolder,
+  deleteNote,
+} = require('../src/models/noteRepository');
+const { folderExists } = require('../src/models/folderRepository');
 
 const router = express.Router();
 
-router.get('/', (_req, res) => {
-	res.json({ notes: listNotes() });
+router.get('/', async (req, res) => {
+	try {
+		const notes = await listNotes(req.user.id);
+		res.json({ notes });
+	} catch (error) {
+		console.error('Error listing notes:', error);
+		res.status(500).json({ message: 'Failed to load notes.' });
+	}
 });
 
 // req is info from front end, res is what to send back
@@ -44,7 +50,12 @@ router.post('/', async (req, res) => {
 					messages: [
 						{
 							role: 'system',
-							content: 'Summarize notes into clear bullet points. Do not write anything extra like "Here is the note summarize", etc',
+							content:`
+								Summarize notes into clear bullet points and 
+								format it neatly so that it is easy to read. 
+								Do not write anything extra like 
+								"Here is the note summarize", etc
+							`,
 						},
 						{
 							role: 'user',
@@ -52,7 +63,7 @@ router.post('/', async (req, res) => {
 						},
 					],
 					temperature: 0.5,
-					max_tokens: 500,
+					max_tokens: 800,
 				},
 				{
 					headers: {
@@ -81,51 +92,108 @@ router.post('/', async (req, res) => {
 		return res.status(400).json({ message: 'title is required.' });
 	}
 
-	if (folderId && !folderExists(folderId)) {
+	if (folderId && !(await folderExists(folderId, req.user.id))) {
 		return res.status(400).json({ message: 'Invalid folderId.' });
 	}
 
-	const note = createNote({
-		title: safeTitle,
-		content: safeContent,
-		folderId,
-		summary: summary || null,
-	});
+	try {
+		const note = await createNote({
+			userId: req.user.id,
+			title: safeTitle,
+			content: safeContent,
+			folderId,
+			summary: summary || null,
+		});
 
-	// Return
-	res.status(201).json({ note });
+		res.status(201).json({ note });
+	} catch (error) {
+		console.error('Error creating note:', error);
+		res.status(500).json({ message: 'Failed to create note.' });
+	}
 });
 
+router.patch('/:id', async (req, res) => {
+	const { title, content, folderId, summary } = req.body || {};
+	const safeTitle = typeof title === 'string' ? title.trim() : '';
+	const safeContent = typeof content === 'string' ? content.trim() : '';
 
-router.get('/:id', (req, res) => {
-	const note = getNoteById(req.params.id);
-	if (!note) {
-		return res.status(404).json({ message: 'Note not found.' });
+	if (!safeTitle) {
+		return res.status(400).json({ message: 'title is required.' });
 	}
 
-	res.json({ note });
+	if (!safeContent) {
+		return res.status(400).json({ message: 'content is required.' });
+	}
+
+	if (folderId && !(await folderExists(folderId, req.user.id))) {
+		return res.status(400).json({ message: 'Invalid folderId.' });
+	}
+
+	try {
+		const note = await updateNote(req.params.id, {
+			userId: req.user.id,
+			title: safeTitle,
+			content: safeContent,
+			folderId,
+			summary: summary === undefined ? undefined : summary || null,
+		});
+
+		if (!note) {
+			return res.status(404).json({ message: 'Note not found.' });
+		}
+
+		res.json({ note });
+	} catch (error) {
+		console.error('Error updating note:', error);
+		res.status(500).json({ message: 'Failed to update note.' });
+	}
 });
-router.patch('/:id/folder', (req, res) => {
+
+
+router.get('/:id', async (req, res) => {
+	try {
+		const note = await getNoteById(req.params.id, req.user.id);
+		if (!note) {
+			return res.status(404).json({ message: 'Note not found.' });
+		}
+
+		res.json({ note });
+	} catch (error) {
+		console.error('Error loading note:', error);
+		res.status(500).json({ message: 'Failed to load note.' });
+	}
+});
+router.patch('/:id/folder', async (req, res) => {
 	const { folderId } = req.body || {};
-	if (folderId && !folderExists(folderId)) {
+	if (folderId && !(await folderExists(folderId, req.user.id))) {
 		return res.status(400).json({ message: 'Invalid folderId.' });
 	}
 
-	const note = updateNoteFolder(req.params.id, folderId || null);
-	if (!note) {
-		return res.status(404).json({ message: 'Note not found.' });
-	}
+	try {
+		const note = await updateNoteFolder(req.params.id, folderId || null, req.user.id);
+		if (!note) {
+			return res.status(404).json({ message: 'Note not found.' });
+		}
 
-	res.json({ note });
+		res.json({ note });
+	} catch (error) {
+		console.error('Error updating note folder:', error);
+		res.status(500).json({ message: 'Failed to update note folder.' });
+	}
 });
 
-router.delete('/:id', (req, res) => {
-	const success = deleteNote(req.params.id);
-	if (!success) {
-		return res.status(404).json({ message: 'Note not found.' });
-	}
+router.delete('/:id', async (req, res) => {
+	try {
+		const success = await deleteNote(req.params.id, req.user.id);
+		if (!success) {
+			return res.status(404).json({ message: 'Note not found.' });
+		}
 
-	res.json({ message: 'Note deleted successfully.' });
+		res.json({ message: 'Note deleted successfully.' });
+	} catch (error) {
+		console.error('Error deleting note:', error);
+		res.status(500).json({ message: 'Failed to delete note.' });
+	}
 });
 
 module.exports = router;
