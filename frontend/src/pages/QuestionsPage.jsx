@@ -25,11 +25,31 @@ function QuestionsPage() {
   function gradeAnswer(userAnswer, correctAnswer) {
     if (!userAnswer) return 'missing';
 
-    if (userAnswer.length < correctAnswer.length * 0.5) {
-      return 'partial';
-    }
+    const normalize = (str) =>
+      str
+        .toLowerCase()
+        .replace(/[^\w\s]/g, '') // remove punctuation
+        .split(/\s+/)
+        .filter(Boolean);
 
-    return 'correct';
+    const userWords = normalize(userAnswer);
+    const correctWords = normalize(correctAnswer);
+
+    // Count overlap
+    let matchCount = 0;
+
+    userWords.forEach((word) => {
+      if (correctWords.includes(word)) {
+        matchCount++;
+      }
+    });
+
+    const matchRatio = matchCount / correctWords.length;
+
+    if (matchRatio > 0.7) return 'correct';
+    if (matchRatio > 0.3) return 'partial';
+
+    return 'incorrect';
   }
 
   useEffect(() => {
@@ -203,7 +223,7 @@ function QuestionsPage() {
                       <p style={{ marginTop: '4px', fontWeight: 'bold' }}>
                         {results[index].status === 'correct' && 'Correct'}
                         {results[index].status === 'partial' && 'Partially Correct'}
-                        {results[index].status === 'missing' && 'Incorrect'}
+                        {results[index].status === 'incorrect' && 'Incorrect'}
                       </p>
                     </div>
 
